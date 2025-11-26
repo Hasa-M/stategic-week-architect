@@ -23,6 +23,7 @@ export const storageService = {
         }
     },
 
+    //---------------AI GENERATED START-------------------
     clearData: (type: DataType): void => {
         try {
             localStorage.removeItem(`${type}_data_v1`);
@@ -41,4 +42,5 @@ export const storageService = {
             console.error("Failed to clear storage:", e);
         }
     },
+    //---------------AI GENERATED END-------------------
 };
