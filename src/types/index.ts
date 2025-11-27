@@ -22,13 +22,15 @@ export type Day =
     | "Saturday"
     | "Sunday";
 
+export type SlotWindow = 15 | 30 | 60 | 90 | 120 | 150 | 180 | 240;
+
 export type Subfactor = {
     title: string;
     description: string;
 };
 
 export interface Activity {
-    templateId: string;
+    templateId: string; // Conceptually the activity is a template
     title: string;
     description: string;
     color: Color;
@@ -37,14 +39,14 @@ export interface Activity {
 
 export interface PlacedActivity extends Activity {
     day: Day;
-    placedId: string;
+    placedId: string; // An activity placed into the schedule
     startTime: number;
     endTime: number;
 }
 
 export type DaysGrid = {
     days: Day[];
-    slotDuration: number;
+    slotDuration: SlotWindow;
     startTime: number;
     endTime: number;
 };
@@ -55,3 +57,31 @@ export type Note = {
     content: string;
     color: Color;
 };
+
+export type ScheduleState = {
+    templates: Record<string, Activity>;
+    placedActivities: Record<string, PlacedActivity>;
+    grid: DaysGrid;
+    notes: Record<string, Note>;
+};
+
+export type ScheduleAction =
+    | { type: "LOAD_STATE"; payload: ScheduleState }
+    | { type: "ADD_TEMPLATE"; payload: Omit<Activity, "templateId"> }
+    | {
+          type: "EDIT_TEMPLATE";
+          payload: { activity: Activity; toPropagate: boolean };
+      }
+    | { type: "DELETE_TEMPLATE"; payload: string }
+    | {
+          type: "PLACE_ACTIVITY";
+          payload: Omit<PlacedActivity, "placedId" | "title" | "color">; //Title and color should be derived from template, cannot be edited too.
+      }
+    | {
+          type: "EDIT_PLACED_ACTIVITY";
+          payload: Omit<PlacedActivity, "title" | "color">;
+      }
+    | { type: "REMOVE_PLACED_ACTIVITY"; payload: string }
+    | { type: "ADD_NOTE"; payload: Omit<Note, "id"> }
+    | { type: "EDIT_NOTE"; payload: Note }
+    | { type: "REMOVE_NOTE"; payload: string };
