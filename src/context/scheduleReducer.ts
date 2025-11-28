@@ -76,6 +76,101 @@ export function scheduleReducer(
             };
         }
 
+        case "DELETE_TEMPLATE": {
+            const templateId = action.payload;
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { [templateId]: _, ...others } = state.templates; // AI suggestion instead of entries trasformations into filter
+
+            return {
+                ...state,
+                templates: others,
+                placedActivities: Object.fromEntries(
+                    Object.entries(state.placedActivities).filter(
+                        ([, content]) => content.templateId !== templateId
+                    )
+                ),
+            };
+        }
+
+        case "PLACE_ACTIVITY": {
+            const placedId = crypto.randomUUID();
+            const template = state.templates[action.payload.templateId];
+
+            return {
+                ...state,
+                placedActivities: {
+                    ...state.placedActivities,
+                    [placedId]: {
+                        ...action.payload,
+                        placedId,
+                        title: template.title,
+                        color: template.color,
+                    },
+                },
+            };
+        }
+
+        case "EDIT_PLACED_ACTIVITY": {
+            const template = state.templates[action.payload.templateId];
+
+            return {
+                ...state,
+                placedActivities: {
+                    ...state.placedActivities,
+                    [action.payload.placedId]: {
+                        ...action.payload,
+                        title: template.title,
+                        color: template.color,
+                    },
+                },
+            };
+        }
+
+        case "REMOVE_PLACED_ACTIVITY":
+            return {
+                ...state,
+                placedActivities: Object.fromEntries(
+                    Object.entries(state.placedActivities).filter(
+                        ([id]) => id !== action.payload
+                    )
+                ),
+            };
+
+        case "ADD_NOTE": {
+            const id = crypto.randomUUID();
+            return {
+                ...state,
+                notes: {
+                    ...state.notes,
+                    [id]: {
+                        id,
+                        ...action.payload,
+                    },
+                },
+            };
+        }
+
+        case "EDIT_NOTE":
+            return {
+                ...state,
+                notes: {
+                    ...state.notes,
+                    [action.payload.id]: {
+                        ...action.payload,
+                    },
+                },
+            };
+
+        case "REMOVE_NOTE":
+            return {
+                ...state,
+                notes: Object.fromEntries(
+                    Object.entries(state.notes).filter(
+                        ([id]) => id !== action.payload
+                    )
+                ),
+            };
+
         default:
             return state;
     }
@@ -96,10 +191,7 @@ function extractChanges(
         changedKeys.map((key) => [key, activityNew[key]])
     ) as Partial<Activity>;
 
-    if (
-        !toPropagate &&
-        (changedKeys.includes("title") || changedKeys.includes("color"))
-    ) {
+    if (!toPropagate) {
         const mustPropagateKeys = changedKeys.filter(
             (key) => key === "title" || key === "color"
         );
@@ -110,5 +202,6 @@ function extractChanges(
 
         return mustPropagatePartialActivity;
     }
+
     return propagatePartialActivity;
 }

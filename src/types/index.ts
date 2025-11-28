@@ -75,11 +75,11 @@ export type ScheduleAction =
     | { type: "DELETE_TEMPLATE"; payload: string }
     | {
           type: "PLACE_ACTIVITY";
-          payload: Omit<PlacedActivity, "placedId" | "title" | "color">; //Title and color should be derived from template, cannot be edited too.
+          payload: Omit<PlacedActivity, "placedId" | "title" | "color">;
       }
     | {
           type: "EDIT_PLACED_ACTIVITY";
-          payload: Omit<PlacedActivity, "title" | "color">;
+          payload: Omit<PlacedActivity, "title" | "color">; //Title and color should be derived from template, cannot be edited too.
       }
     | { type: "REMOVE_PLACED_ACTIVITY"; payload: string }
     | { type: "ADD_NOTE"; payload: Omit<Note, "id"> }
