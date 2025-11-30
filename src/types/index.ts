@@ -1,5 +1,3 @@
-export type DataType = "activities" | "grid" | "placed_activities" | "notes";
-
 export type Color =
     | "red"
     | "amber"

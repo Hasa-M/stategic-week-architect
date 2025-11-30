@@ -1,43 +1,33 @@
-import { type DataType } from "@/types";
+import type { ScheduleState } from "@/types";
+
+const STORAGE_KEY = "schedule_state_v1";
 
 export const storageService = {
-    loadData: <T>(type: DataType): T | null => {
+    loadState: (): ScheduleState | null => {
         try {
-            const serializedState = localStorage.getItem(`${type}_data_v1`);
+            const serializedState = localStorage.getItem(STORAGE_KEY);
             if (serializedState === null) {
                 return null;
             }
-            return JSON.parse(serializedState) as T;
+            return JSON.parse(serializedState) as ScheduleState;
         } catch (e) {
             console.error("Failed to load schedule from storage:", e);
             return null;
         }
     },
 
-    saveData: <T>(type: DataType, toSave: T): void => {
+    saveState: (state: ScheduleState): void => {
         try {
-            const serializedState = JSON.stringify(toSave);
-            localStorage.setItem(`${type}_data_v1`, serializedState);
+            const serializedState = JSON.stringify(state);
+            localStorage.setItem(STORAGE_KEY, serializedState);
         } catch (e) {
             console.error("Failed to save schedule from storage", e);
         }
     },
 
-    //---------------AI GENERATED START-------------------
-    clearData: (type: DataType): void => {
+    clearState: (): void => {
         try {
-            localStorage.removeItem(`${type}_data_v1`);
-        } catch (e) {
-            console.error("Failed to clear storage:", e);
-        }
-    },
-
-    clearAllData: (): void => {
-        try {
-            localStorage.removeItem("activities_data_v1");
-            localStorage.removeItem("grid_data_v1");
-            localStorage.removeItem("placed_activities_data_v1");
-            localStorage.removeItem("notes_data_v1");
+            localStorage.removeItem(STORAGE_KEY);
         } catch (e) {
             console.error("Failed to clear storage:", e);
         }
