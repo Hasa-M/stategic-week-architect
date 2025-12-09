@@ -5,6 +5,8 @@ import {
 } from "@/types";
 
 export const initialState: ScheduleState = {
+    id: crypto.randomUUID(),
+    name: "My Weekly Schedule",
     templates: {},
     placedActivities: {},
     grid: {

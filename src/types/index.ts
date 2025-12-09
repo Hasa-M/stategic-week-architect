@@ -57,6 +57,8 @@ export type Note = {
 };
 
 export type ScheduleState = {
+    id: string;
+    name: string;
     templates: Record<string, Activity>;
     placedActivities: Record<string, PlacedActivity>;
     grid: DaysGrid;
@@ -65,6 +67,7 @@ export type ScheduleState = {
 
 export type ScheduleAction =
     | { type: "LOAD_STATE"; payload: ScheduleState }
+    | { type: "EDIT_SCHEDULE"; payload: Omit<ScheduleState, "id"> }
     | { type: "ADD_TEMPLATE"; payload: Omit<Activity, "templateId"> }
     | {
           type: "EDIT_TEMPLATE";
