@@ -1,3 +1,7 @@
+import { ArrowRightIcon } from "lucide-react";
+
+import { WeeklyAppButton } from "./Button/Button";
+
 export default function Header() {
     return (
         <header className="p-0 flex flex-row flex-wrap gap-4">
@@ -6,14 +10,15 @@ export default function Header() {
                     Welcome to Your Weekly Schedule!
                 </p>
             </span>
-            <button
-                className="w-fit font-bold text-primary hover:text-primary-hover"
+            <WeeklyAppButton
+                variant="ghost"
+                size="lg"
                 onClick={() =>
                     alert("This feature will be available in the future...")
                 }
             >
-                View Notes {"->"}
-            </button>
+                View Notes <ArrowRightIcon />
+            </WeeklyAppButton>
         </header>
     );
 }
