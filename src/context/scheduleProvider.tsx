@@ -1,7 +1,10 @@
 import { useEffect, useReducer, type ReactNode, useRef } from "react";
-import { initialState, scheduleReducer } from "./scheduleReducer";
+import { scheduleReducer } from "./scheduleReducer"; // put initialState import there
 import { ScheduleContext, ScheduleDispatchContext } from "./scheduleContext";
 import { storageService } from "@/services/storageService";
+
+//after to change with the real inizial schedule
+import { INITIAL_SCHEDULE_STATE as initialState } from "@/data/mockData";
 
 export default function ScheduleProvider({
     children,

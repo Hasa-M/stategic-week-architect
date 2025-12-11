@@ -67,6 +67,7 @@ export type ScheduleState = {
 
 export type ScheduleAction =
     | { type: "LOAD_STATE"; payload: ScheduleState }
+    | { type: "SET_NAME"; payload: string }
     | { type: "EDIT_SCHEDULE"; payload: Omit<ScheduleState, "id"> }
     | { type: "ADD_TEMPLATE"; payload: Omit<Activity, "templateId"> }
     | {

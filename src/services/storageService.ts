@@ -32,5 +32,4 @@ export const storageService = {
             console.error("Failed to clear storage:", e);
         }
     },
-    //---------------AI GENERATED END-------------------
 };

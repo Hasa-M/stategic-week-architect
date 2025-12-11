@@ -34,6 +34,12 @@ export function scheduleReducer(
         case "LOAD_STATE":
             return action.payload;
 
+        case "SET_NAME":
+            return {
+                ...state,
+                name: action.payload,
+            };
+
         case "ADD_TEMPLATE": {
             const templateId = crypto.randomUUID();
             return {

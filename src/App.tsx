@@ -1,13 +1,12 @@
 import Header from "./components/Header";
+import TemplatesBar from "./components/TemplatesBar";
 
 function App() {
     return (
         <div className="m-6 md:mx-8 flex flex-row h-full">
             <main className="mr-3 flex-auto">
                 <Header />
-                <div className="pt-6 pb-0 px-0">
-                    <span>Templates Bar</span>
-                </div>
+                <TemplatesBar />
                 <div className="pt-6 pb-0 px-0">
                     <span>Grid Toolbar</span>
                 </div>
