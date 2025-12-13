@@ -6,21 +6,19 @@ import { storageService } from "@/services/storageService";
 //after to change with the real inizial schedule
 import { INITIAL_SCHEDULE_STATE as initialState } from "@/data/mockData";
 
+const init = (defaultState: ScheduleState): ScheduleState => {
+  const savedState = storageService.loadState();
+  return savedState ?? defaultState;
+};
+
 export default function ScheduleProvider({
     children,
 }: {
     children: ReactNode;
-}): ReactNode {
-    const [scheduleState, dispatch] = useReducer(scheduleReducer, initialState);
+}) {
+    const [scheduleState, dispatch] = useReducer(scheduleReducer, initialState, init);
     const isFirstRender = useRef(true);
 
-    // load on mount
-    useEffect(() => {
-        const state = storageService.loadState();
-        dispatch({ type: "LOAD_STATE", payload: state ?? initialState });
-    }, []);
-
-    // save data on change
     useEffect(() => {
         if (isFirstRender.current) {
             isFirstRender.current = false;
