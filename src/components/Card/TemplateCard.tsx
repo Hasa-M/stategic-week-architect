@@ -7,7 +7,7 @@ export default function TemplateCard({
 }) {
     return (
         <li
-            className="h-8 bg-white flex rounded-sm pr-3 gap-3 shadow-sm hover:bg-background-accent transition duration-300 ease-in-out cursor-pointer disabled:cursor-not-allowed select-none"
+            className="h-8 bg-white flex rounded-sm pr-3 gap-3 shadow-sm hover:bg-background-accent transition duration-300 ease-in-out cursor-pointer disabled:cursor-not-allowed"
             onClick={() => alert("Edit/Delete dialog coming soon...")}
         >
             <div
