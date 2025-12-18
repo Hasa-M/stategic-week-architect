@@ -1,4 +1,5 @@
 import Header from "./components/Header";
+import { Select } from "./components/Inputs/ui-select/select";
 import TemplatesBar from "./components/TemplatesBar";
 
 function App() {
@@ -13,6 +14,14 @@ function App() {
                 <section className="pt-3 pb-0 px-0">
                     <span>Grid</span>
                 </section>
+                <Select
+                    name="color"
+                    options={[
+                        { value: "red", label: "Red" },
+                        { value: "lime", label: "Lime" },
+                    ]}
+                    required={true}
+                />
             </main>
             <aside className="ml-3 md:w-80 2xl:w-120 flex-none">Sidebar</aside>
         </div>

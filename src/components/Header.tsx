@@ -1,6 +1,6 @@
 import { ArrowRightIcon, Pencil, Check, X } from "lucide-react";
 
-import { Input } from "@/components/Input/ui/input";
+import { Input } from "@/components/Inputs/ui-input/input";
 import { WeeklyAppButton } from "./Button/Button";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useScheduleContext } from "@/context/hooks";
