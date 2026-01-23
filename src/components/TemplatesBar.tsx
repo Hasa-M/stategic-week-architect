@@ -6,7 +6,7 @@ import TemplateCard from "./Card/TemplateCard";
 import { getColorClass } from "@/utils";
 import { FormModal } from "./Forms/FormModal";
 import type { Activity } from "@/types";
-import { activityFields } from "./Forms/fielsLists";
+import { activityFields } from "@/fielsLists";
 import { useDispatch, useScheduleContext } from "@/context/hooks";
 
 export default function TemplatesBar() {

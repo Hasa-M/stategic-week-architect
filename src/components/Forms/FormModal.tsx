@@ -14,6 +14,8 @@ import { X, Check } from "lucide-react";
 import type { FormFieldConfig } from "@/components/Forms/FormField";
 import FormField from "@/components/Forms/FormField";
 
+// TODO - Try to understand if optimisable with zustand or redux - passing the fileds data across form props drilling
+
 type FormModalProps<T> = {
     title: string;
     description: ReactNode;

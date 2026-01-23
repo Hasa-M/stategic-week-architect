@@ -1,5 +1,5 @@
 import type { Activity } from "@/types";
-import type { FormFieldConfig } from "./FormField";
+import type { FormFieldConfig } from "./components/Forms/FormField";
 
 //activity
 const activityFields: FormFieldConfig<Activity>[] = [
