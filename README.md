@@ -50,62 +50,6 @@ A weekly schedule planning application designed to help users organize activitie
 
 The backend will use NestJS for the API layer. WASM modules written in C will handle data-heavy operations (schedule optimization, conflict detection, analytics calculations) as a proof of concept for hybrid JS/WASM architecture.
 
-## Project Structure
-
-```
-src/
-├── components/
-│   ├── Button/              # Button component with variants
-│   ├── Card/                # Template cards
-│   ├── Forms/               # Polymorphic FormModal & FormField
-│   ├── Inputs/              # Form inputs (Input, Textarea, Select, Checkbox)
-│   ├── Modals/              # Dialog & AlertDialog components
-│   ├── Header.tsx           # App header with editable title
-│   └── TemplatesBar.tsx     # Activity templates sidebar
-├── context/
-│   ├── scheduleContext.ts   # Context definitions
-│   ├── scheduleProvider.tsx # Provider with reducer
-│   ├── scheduleReducer.ts   # State reducer logic
-│   └── hooks.ts             # Custom hooks (useDispatch, useScheduleContext)
-├── services/
-│   └── storageService.ts    # LocalStorage persistence
-├── data/
-│   └── mockData.ts          # Initial mock data
-├── types.ts                 # TypeScript type definitions
-├── fieldConfigs.ts          # Form field configurations
-├── utils.ts                 # Utility functions
-├── App.tsx                  # Main app layout
-└── main.tsx                 # Entry point
-```
-
-## Data Models
-
-```typescript
-// Activity template
-interface Activity {
-    templateId: string;
-    title: string;
-    description: string;
-    color: Color;
-    subfactors: Subfactor[];
-}
-
-// Placed activity on schedule
-interface PlacedActivity extends Activity {
-    placedId: string;
-    day: Day;
-    startTime: string;
-    endTime: string;
-}
-
-// Note
-interface Note {
-    id: string;
-    title: string;
-    content: string;
-    color: Color;
-}
-```
 
 ## State Management
 
