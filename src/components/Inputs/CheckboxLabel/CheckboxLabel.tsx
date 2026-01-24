@@ -15,7 +15,7 @@ export default function CheckboxLabel({
     ...props
 }: CheckboxLabelProps) {
     return (
-        <div className="flex items-start gap-3">
+        <div className={info ? "flex items-start gap-3" : "flex items-center gap-3"}>
             <Checkbox id={id} name={name} {...props} />
             <div className="grid gap-1">
                 <Label htmlFor={id}>{label}</Label>

@@ -1,17 +1,7 @@
 import Header from "./components/Header";
 import TemplatesBar from "./components/TemplatesBar";
 
-/**
- * App - Root application component.
- *
- * Layout structure:
- * - Main content area (flexible width)
- *   - Header with editable schedule title
- *   - Templates bar with activity templates
- *   - Grid toolbar (placeholder)
- *   - Schedule grid (placeholder)
- * - Sidebar (fixed width) for notes and additional info
- */
+
 function App() {
     return (
         <div className="m-6 md:mx-8 flex flex-row h-full">

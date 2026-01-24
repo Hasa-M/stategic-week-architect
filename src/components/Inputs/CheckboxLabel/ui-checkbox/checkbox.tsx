@@ -27,7 +27,7 @@ function Checkbox({
             setIsChecked(boolValue);
             onCheckedChange?.(val);
         },
-        [onCheckedChange]
+        [onCheckedChange],
     );
 
     return (
@@ -35,12 +35,13 @@ function Checkbox({
             <CheckboxPrimitive.Root
                 data-slot="checkbox"
                 className={cn(
-                    "peer size-5 shrink-0 rounded-[4px] border-2 border-primary bg-transparent shadow-xs transition-all outline-none dark:bg-input/30",
-                    "data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground data-[state=checked]:border-primary",
+                    "peer size-5 shrink-0 rounded-[4px] border-2 border-primary shadow-xs outline-none dark:bg-input/30",
+                    "data-[state=checked]:bg-primary data-[state=checked]:text-white data-[state=checked]:border-primary",
+                    "bg-white",
                     "focus-visible:border-ring focus-visible:ring-primary/50 focus-visible:ring-2",
                     "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
                     "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
-                    className
+                    className,
                 )}
                 checked={checked}
                 defaultChecked={defaultChecked}

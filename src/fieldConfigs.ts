@@ -11,10 +11,6 @@
 import type { Activity, Note, Color } from "@/types";
 import type { FormFieldConfig } from "./components/Forms/FormField";
 
-// =============================================================================
-// SHARED OPTIONS
-// =============================================================================
-
 /**
  * All available color options for activities and notes.
  * Derived from the Color type in types.ts.
@@ -32,10 +28,6 @@ const COLOR_OPTIONS: { value: Color; label: string }[] = [
     { value: "slate", label: "Slate" },
     { value: "stone", label: "Stone" },
 ];
-
-// =============================================================================
-// ACTIVITY FIELDS
-// =============================================================================
 
 /**
  * Field configuration for creating/editing Activity templates.
@@ -82,10 +74,6 @@ const activityFields: FormFieldConfig<Activity>[] = [
     // },
 ];
 
-// =============================================================================
-// NOTE FIELDS
-// =============================================================================
-
 /**
  * Field configuration for creating/editing Notes.
  *
@@ -125,9 +113,5 @@ const noteFields: FormFieldConfig<Note>[] = [
         showColorIndicator: true,
     },
 ];
-
-// =============================================================================
-// EXPORTS
-// =============================================================================
 
 export { activityFields, noteFields, COLOR_OPTIONS };

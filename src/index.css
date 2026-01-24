@@ -23,4 +23,9 @@
     [role="button"]:not(:disabled) {
         cursor: pointer;
     }
+
+    .cursor-pointer,
+    [role="button"] {
+        user-select: none;
+    }
 }
