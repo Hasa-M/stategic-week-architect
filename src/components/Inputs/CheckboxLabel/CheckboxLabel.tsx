@@ -17,7 +17,7 @@ export default function CheckboxLabel({
     return (
         <div className="flex items-start gap-3">
             <Checkbox id={id} name={name} {...props} />
-            <div className="grid gap-2">
+            <div className="grid gap-1">
                 <Label htmlFor={id}>{label}</Label>
                 {info && (
                     <p className="text-muted-foreground text-sm">{info}</p>

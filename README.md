@@ -21,3 +21,5 @@ Structure:
 │  N3: Schedule Grid                              │          │
 └─────────────────────────────────────────────────┴──────────┘
 ```
+
+Comments added by Claude Code
