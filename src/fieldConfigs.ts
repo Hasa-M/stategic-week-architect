@@ -88,6 +88,18 @@ const activityFields: FormFieldConfig<Activity>[] = [
  * </FormModal>
  * ```
  */
+type ActivityWithPropagate = Activity & { toPropagate: boolean };
+
+const activityFieldsForEdit: FormFieldConfig<ActivityWithPropagate>[] = [
+    ...activityFields,
+    {
+        name: "toPropagate",
+        type: "checkbox",
+        label: "Apply changes to placed activities",
+        defaultChecked: true,
+    },
+];
+
 const noteFields: FormFieldConfig<Note>[] = [
     {
         name: "title",
@@ -114,4 +126,4 @@ const noteFields: FormFieldConfig<Note>[] = [
     },
 ];
 
-export { activityFields, noteFields, COLOR_OPTIONS };
+export { activityFields, activityFieldsForEdit, noteFields, COLOR_OPTIONS };

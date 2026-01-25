@@ -1,11 +1,10 @@
 import Header from "./components/Header";
 import TemplatesBar from "./components/TemplatesBar";
-
+import NotesSidebar from "./components/NotesSidebar";
 
 function App() {
     return (
         <div className="m-6 md:mx-8 flex flex-row h-full">
-            {/* Main content area */}
             <main className="mr-3 flex-auto">
                 <Header />
                 <TemplatesBar />
@@ -21,10 +20,8 @@ function App() {
                 </section>
             </main>
 
-            {/* Sidebar for notes and additional content */}
             <aside className="ml-3 md:w-80 2xl:w-120 flex-none">
-                {/* TODO: Implement notes sidebar */}
-                Sidebar
+                <NotesSidebar />
             </aside>
         </div>
     );
