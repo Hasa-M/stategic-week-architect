@@ -105,7 +105,7 @@ export function FormModal<T extends object>({
     }, [fields, initialData]);
 
     const effectiveSubmitLabel =
-        submitLabel ?? (mode === "edit" ? "update" : "save");
+        submitLabel ?? (mode === "edit" ? "Update" : "Save");
     const effectiveCancelLabel = cancelLabel ?? "Cancel";
 
     return (

@@ -5,8 +5,14 @@ import { WeeklyAppButton } from "./Button/Button";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useScheduleContext } from "@/context/hooks";
 import { storageService } from "@/services/storageService";
+import type { SidebarView } from "./Sidebar/Sidebar";
 
-export default function Header() {
+type HeaderProps = {
+    sidebarView: SidebarView;
+    onToggleSidebar: () => void;
+};
+
+export default function Header({ sidebarView, onToggleSidebar }: HeaderProps) {
     const input = useRef<HTMLInputElement>(null);
     const [isEdit, setIsEdit] = useState(false);
 
@@ -57,8 +63,8 @@ export default function Header() {
         title = (
             <>
                 <Input
-                    type="email"
-                    placeholder="Email"
+                    type="text"
+                    placeholder="Schedule name"
                     defaultValue={
                         schedule?.name ?? "Welcome to Your Weekly Schedule!"
                     }
@@ -90,14 +96,9 @@ export default function Header() {
             <span className="group flex-1 flex items-center gap-2">
                 {title}
             </span>
-            <WeeklyAppButton
-                variant="ghost"
-                size="lg"
-                onClick={() =>
-                    alert("This feature will be available in the future...")
-                }
-            >
-                View Notes <ArrowRightIcon />
+            <WeeklyAppButton variant="ghost" size="lg" onClick={onToggleSidebar}>
+                {sidebarView === "dashboard" ? "View notes" : "View dashboard"}{" "}
+                <ArrowRightIcon />
             </WeeklyAppButton>
         </header>
     );

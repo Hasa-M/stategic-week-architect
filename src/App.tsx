@@ -1,27 +1,32 @@
+import { useState } from "react";
 import Header from "./components/Header";
 import TemplatesBar from "./components/TemplatesBar";
-import NotesSidebar from "./components/NotesSidebar";
+import { Sidebar, type SidebarView } from "./components/Sidebar";
+import { GridToolbar, ScheduleGrid } from "./components/Grid";
 
 function App() {
+    const [sidebarView, setSidebarView] = useState<SidebarView>("dashboard");
+
+    const toggleSidebar = () => {
+        setSidebarView((prev) => (prev === "dashboard" ? "notes" : "dashboard"));
+    };
+
     return (
         <div className="m-6 md:mx-8 flex flex-row h-full">
-            <main className="mr-3 flex-auto">
-                <Header />
+            <main className="mr-3 flex-auto flex flex-col">
+                <Header
+                    sidebarView={sidebarView}
+                    onToggleSidebar={toggleSidebar}
+                />
                 <TemplatesBar />
-
-                {/* TODO: Implement grid toolbar */}
-                <div className="pt-6 pb-0 px-0">
-                    <span>Grid Toolbar</span>
-                </div>
-
-                {/* TODO: Implement schedule grid */}
-                <section className="pt-3 pb-0 px-0">
-                    <span>Grid</span>
+                <GridToolbar />
+                <section className="flex-1 overflow-auto">
+                    <ScheduleGrid />
                 </section>
             </main>
 
             <aside className="ml-3 md:w-80 2xl:w-120 flex-none">
-                <NotesSidebar />
+                <Sidebar view={sidebarView} />
             </aside>
         </div>
     );
