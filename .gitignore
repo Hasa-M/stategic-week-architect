@@ -24,4 +24,4 @@ dist-ssr
 *.sw?
 
 # AI Agents
-*.claude
+.claude
