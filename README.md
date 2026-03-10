@@ -29,7 +29,7 @@ A weekly schedule planning application designed to help users organize activitie
 
 ## Tech Stack
 
-### Frontend (Current)
+### Frontend (In Progress)
 
 | Technology | Purpose |
 |------------|---------|
@@ -41,7 +41,7 @@ A weekly schedule planning application designed to help users organize activitie
 | Lucide React | Icons |
 | Class Variance Authority | Component variants |
 
-### Backend (Planned)
+### Backend (Not Actually Developed)
 
 | Technology | Purpose |
 |------------|---------|
@@ -116,25 +116,3 @@ npm run dev
 | `npm run lint` | Run ESLint |
 | `npm run preview` | Preview production build |
 
-## Roadmap
-
-### Frontend
-- [ ] Schedule grid visualization (main calendar view)
-- [ ] Drag-and-drop activity placement
-- [ ] Grid toolbar (days filter, time slots)
-- [ ] Notes sidebar implementation
-- [ ] Template card edit/delete dialogs
-- [ ] Subfactors nested form field
-
-### Backend
-- [ ] NestJS project setup
-- [ ] REST API for schedules, templates, notes
-- [ ] User authentication (JWT)
-- [ ] Database integration (PostgreSQL)
-- [ ] WASM module: schedule conflict detection
-- [ ] WASM module: time analytics calculations
-- [ ] Cloud sync
-
-## License
-
-MIT
