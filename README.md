@@ -30,7 +30,7 @@ A weekly schedule planning application designed to help users organize activitie
 
 ## Tech Stack
 
-### Frontend (Current)
+### Frontend (In Progress)
 
 | Technology | Purpose |
 |------------|---------|
@@ -42,7 +42,7 @@ A weekly schedule planning application designed to help users organize activitie
 | Lucide React | Icons |
 | Class Variance Authority | Component variants |
 
-### Backend (Planned)
+### Backend (Not Actually Developed)
 
 | Technology | Purpose |
 |------------|---------|
