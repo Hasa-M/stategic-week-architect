@@ -27,20 +27,34 @@ export type Subfactor = {
     description: string;
 };
 
-export interface Activity {
-    templateId: string; // Conceptually the activity is a template
+export interface ActivitySnapshot {
     title: string;
     description: string;
     color: Color;
     subfactors: Subfactor[];
 }
 
-export interface PlacedActivity extends Activity {
+export interface Activity extends ActivitySnapshot {
+    templateId: string; // Conceptually the activity is a template
+}
+
+export interface PlacedActivity extends ActivitySnapshot {
+    templateId: string;
     day: Day;
     placedId: string; // An activity placed into the schedule
     startTime: number;
     endTime: number;
 }
+
+export type ActivityDraft = ActivitySnapshot;
+
+export type PlacedActivityDraft = Pick<
+    PlacedActivity,
+    "templateId" | "day" | "startTime" | "endTime"
+>;
+
+export type PlacedActivityUpdate = PlacedActivityDraft &
+    Pick<PlacedActivity, "placedId">;
 
 export type DaysGrid = {
     days: Day[];
@@ -56,6 +70,8 @@ export type Note = {
     color: Color;
 };
 
+export type NoteDraft = Omit<Note, "id">;
+
 export type ScheduleState = {
     id: string;
     name: string;
@@ -68,8 +84,7 @@ export type ScheduleState = {
 export type ScheduleAction =
     | { type: "LOAD_STATE"; payload: ScheduleState }
     | { type: "SET_NAME"; payload: string }
-    | { type: "EDIT_SCHEDULE"; payload: Omit<ScheduleState, "id"> }
-    | { type: "ADD_TEMPLATE"; payload: Omit<Activity, "templateId"> }
+        | { type: "ADD_TEMPLATE"; payload: ActivityDraft }
     | {
           type: "EDIT_TEMPLATE";
           payload: { activity: Activity; toPropagate: boolean };
@@ -77,13 +92,15 @@ export type ScheduleAction =
     | { type: "DELETE_TEMPLATE"; payload: string }
     | {
           type: "PLACE_ACTIVITY";
-          payload: Omit<PlacedActivity, "placedId" | "title" | "color">;
+                    payload: PlacedActivityDraft;
       }
     | {
           type: "EDIT_PLACED_ACTIVITY";
-          payload: Omit<PlacedActivity, "title" | "color">; //Title and color should be derived from template, cannot be edited too.
+                    payload: PlacedActivityUpdate;
       }
     | { type: "REMOVE_PLACED_ACTIVITY"; payload: string }
-    | { type: "ADD_NOTE"; payload: Omit<Note, "id"> }
+        | { type: "SET_GRID_DAYS"; payload: Day[] }
+        | { type: "SET_GRID_SLOT_DURATION"; payload: SlotWindow }
+    | { type: "ADD_NOTE"; payload: NoteDraft }
     | { type: "EDIT_NOTE"; payload: Note }
     | { type: "REMOVE_NOTE"; payload: string };

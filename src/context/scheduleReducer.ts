@@ -1,7 +1,8 @@
 import {
-    type ScheduleState,
-    type ScheduleAction,
     type Activity,
+    type ActivitySnapshot,
+    type ScheduleAction,
+    type ScheduleState,
 } from "@/types";
 
 export const initialState: ScheduleState = {
@@ -42,6 +43,7 @@ export function scheduleReducer(
 
         case "ADD_TEMPLATE": {
             const templateId = crypto.randomUUID();
+
             return {
                 ...state,
                 templates: {
@@ -56,26 +58,31 @@ export function scheduleReducer(
 
         case "EDIT_TEMPLATE": {
             const templateId = action.payload.activity.templateId;
-            const changes = extractChanges(
+            const existingTemplate = state.templates[templateId];
+
+            if (!existingTemplate) {
+                return state;
+            }
+
+            const propagatedChanges = getPropagatedActivityChanges(
                 action.payload.activity,
-                state.templates[templateId],
+                existingTemplate,
                 action.payload.toPropagate
             );
+
             return {
                 ...state,
                 templates: {
                     ...state.templates,
-                    [templateId]: {
-                        ...action.payload.activity,
-                    },
+                    [templateId]: action.payload.activity,
                 },
-                ...(Object.keys(changes).length > 0 && {
+                ...(Object.keys(propagatedChanges).length > 0 && {
                     placedActivities: Object.fromEntries(
                         Object.entries(state.placedActivities).map(
                             ([id, content]) => [
                                 id,
                                 content.templateId === templateId
-                                    ? { ...content, ...changes }
+                                    ? { ...content, ...propagatedChanges }
                                     : content,
                             ]
                         )
@@ -86,8 +93,11 @@ export function scheduleReducer(
 
         case "DELETE_TEMPLATE": {
             const templateId = action.payload;
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const { [templateId]: _, ...others } = state.templates; // AI suggestion instead of entries trasformations into filter
+            const others = Object.fromEntries(
+                Object.entries(state.templates).filter(
+                    ([id]) => id !== templateId
+                )
+            );
 
             return {
                 ...state,
@@ -101,8 +111,13 @@ export function scheduleReducer(
         }
 
         case "PLACE_ACTIVITY": {
-            const placedId = crypto.randomUUID();
             const template = state.templates[action.payload.templateId];
+
+            if (!template) {
+                return state;
+            }
+
+            const placedId = crypto.randomUUID();
 
             return {
                 ...state,
@@ -112,7 +127,9 @@ export function scheduleReducer(
                         ...action.payload,
                         placedId,
                         title: template.title,
+                        description: template.description,
                         color: template.color,
+                        subfactors: template.subfactors,
                     },
                 },
             };
@@ -121,6 +138,10 @@ export function scheduleReducer(
         case "EDIT_PLACED_ACTIVITY": {
             const template = state.templates[action.payload.templateId];
 
+            if (!template) {
+                return state;
+            }
+
             return {
                 ...state,
                 placedActivities: {
@@ -128,7 +149,9 @@ export function scheduleReducer(
                     [action.payload.placedId]: {
                         ...action.payload,
                         title: template.title,
+                        description: template.description,
                         color: template.color,
+                        subfactors: template.subfactors,
                     },
                 },
             };
@@ -144,8 +167,27 @@ export function scheduleReducer(
                 ),
             };
 
+        case "SET_GRID_DAYS":
+            return {
+                ...state,
+                grid: {
+                    ...state.grid,
+                    days: action.payload,
+                },
+            };
+
+        case "SET_GRID_SLOT_DURATION":
+            return {
+                ...state,
+                grid: {
+                    ...state.grid,
+                    slotDuration: action.payload,
+                },
+            };
+
         case "ADD_NOTE": {
             const id = crypto.randomUUID();
+
             return {
                 ...state,
                 notes: {
@@ -163,9 +205,7 @@ export function scheduleReducer(
                 ...state,
                 notes: {
                     ...state.notes,
-                    [action.payload.id]: {
-                        ...action.payload,
-                    },
+                    [action.payload.id]: action.payload,
                 },
             };
 
@@ -184,32 +224,35 @@ export function scheduleReducer(
     }
 }
 
-function extractChanges(
+function getPropagatedActivityChanges(
     activityNew: Activity,
     activityOld: Activity,
     toPropagate: boolean
-): Partial<Activity> {
-    const keys = Object.keys(activityOld) as (keyof Activity)[];
+): Partial<ActivitySnapshot> {
+    const changes: Partial<ActivitySnapshot> = {};
 
-    const changedKeys = keys.filter(
-        (value) => activityNew[value] !== activityOld[value]
-    );
-
-    const propagatePartialActivity = Object.fromEntries(
-        changedKeys.map((key) => [key, activityNew[key]])
-    ) as Partial<Activity>;
-
-    if (!toPropagate) {
-        const mustPropagateKeys = changedKeys.filter(
-            (key) => key === "title" || key === "color"
-        );
-
-        const mustPropagatePartialActivity = Object.fromEntries(
-            mustPropagateKeys.map((key) => [key, activityNew[key]])
-        );
-
-        return mustPropagatePartialActivity;
+    if (activityNew.title !== activityOld.title) {
+        changes.title = activityNew.title;
     }
 
-    return propagatePartialActivity;
+    if (activityNew.color !== activityOld.color) {
+        changes.color = activityNew.color;
+    }
+
+    if (!toPropagate) {
+        return changes;
+    }
+
+    if (activityNew.description !== activityOld.description) {
+        changes.description = activityNew.description;
+    }
+
+    if (
+        JSON.stringify(activityNew.subfactors) !==
+        JSON.stringify(activityOld.subfactors)
+    ) {
+        changes.subfactors = activityNew.subfactors;
+    }
+
+    return changes;
 }

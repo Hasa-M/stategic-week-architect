@@ -1,9 +1,9 @@
-import { Trash2 } from "lucide-react";
-import type { Note } from "@/types";
+import type { Note, NoteDraft } from "@/types";
 import { getColorClass } from "@/utils";
-import { FormModal } from "../Forms/FormModal";
-import { AlertModal } from "../Modals/AlertModal/AlertModal";
+import { FormModal } from "@/components/Forms/FormModal";
+import { AlertModal } from "@/components/Modals/AlertModal/AlertModal";
 import { noteFields } from "@/fieldConfigs";
+import CardDeleteButton from "@/components/Card/CardDeleteButton";
 
 type NoteCardProps = {
     note: Note;
@@ -16,7 +16,7 @@ export default function NoteCard({ note, onEdit, onDelete }: NoteCardProps) {
 
     return (
         <div className="relative group">
-            <FormModal<Note>
+            <FormModal<NoteDraft>
                 title="Edit Note"
                 description="Update this note."
                 fields={noteFields}
@@ -24,7 +24,7 @@ export default function NoteCard({ note, onEdit, onDelete }: NoteCardProps) {
                 initialData={note}
                 onSubmit={(data) => onEdit({ ...data, id: note.id })}
             >
-                <div className="bg-white rounded-md p-3 shadow-sm hover:bg-background-accent transition duration-300 ease-in-out cursor-pointer">
+                <div className="bg-surface cursor-pointer rounded-md p-3 shadow-sm transition duration-300 ease-in-out hover:bg-background-accent">
                     <div className="flex items-start gap-3">
                         <div
                             className={`w-1 self-stretch rounded-full shrink-0 ${colorClass}`}
@@ -52,12 +52,7 @@ export default function NoteCard({ note, onEdit, onDelete }: NoteCardProps) {
                 variant="destructive"
                 confirmLabel="Delete"
             >
-                <button
-                    className="absolute -top-2 -right-2 p-1 bg-white rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50"
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    <Trash2 size={14} className="text-red-600" />
-                </button>
+                <CardDeleteButton onClick={(event) => event.stopPropagation()} />
             </AlertModal>
         </div>
     );

@@ -1,65 +1,125 @@
-/**
- * SummaryDashboard - Right sidebar showing financial summary
- *
- * TODO: Implement this component to show:
- * - Credit Balance card (top) with amount and trend icon
- * - Recent transactions list (Bill & Taxes, Car Energy, Design Course, etc.)
- * - Profit and Loss section with amount and "On track" status
- * - Spent this month section with chart
- *
- * Design reference:
- * - Green background for balance card
- * - Transaction items with icon, name, date, and amount
- * - Line chart for spending trend
- */
+import { CalendarDays, Clock3, LayoutGrid, StickyNote } from "lucide-react";
+
+import { useScheduleContext } from "@/context/hooks";
+
 export default function SummaryDashboard() {
+    const schedule = useScheduleContext();
+    const visibleDays = schedule.grid.days;
+    const placedActivities = Object.values(schedule.placedActivities).filter(
+        (activity) => visibleDays.includes(activity.day)
+    );
+    const totalPlannedHours = placedActivities.reduce(
+        (total, activity) => total + (activity.endTime - activity.startTime) / 60,
+        0
+    );
+    const hoursByDay = visibleDays.map((day) => {
+        const hours = placedActivities
+            .filter((activity) => activity.day === day)
+            .reduce(
+                (total, activity) =>
+                    total + (activity.endTime - activity.startTime) / 60,
+                0
+            );
+
+        return { day, hours };
+    });
+    const busiestDay =
+        hoursByDay.reduce(
+            (current, next) => (next.hours > current.hours ? next : current),
+            { day: visibleDays[0] ?? "Monday", hours: 0 }
+        ) ?? null;
+    const recentTemplates = Object.values(schedule.templates).slice(0, 4);
+
     return (
-        <div className="flex flex-col gap-4 h-full">
-            {/* TODO: Credit Balance Card */}
-            <div className="bg-emerald-700 text-white rounded-xl p-4">
-                <p className="text-sm opacity-80">Credit Balance</p>
-                <p className="text-3xl font-bold">$25,215</p>
-                {/* TODO: Add trend icon/chart */}
+        <div className="flex h-full flex-col gap-4">
+            <div className="rounded-2xl bg-primary p-5 text-on-primary shadow-sm">
+                <p className="text-sm opacity-80">Weekly overview</p>
+                <p className="mt-1 text-2xl font-bold">{schedule.name}</p>
+                <p className="mt-3 text-sm opacity-90">
+                    {placedActivities.length} planned activities across {visibleDays.length}{" "}
+                    visible days
+                </p>
             </div>
 
-            {/* TODO: Recent Transactions */}
-            <div className="flex-1">
-                <p className="text-sm text-gray-500 mb-2">Recent</p>
+            <div className="grid gap-3 sm:grid-cols-2">
+                <div className="bg-surface rounded-xl p-4 shadow-sm">
+                    <div className="text-muted-foreground flex items-center gap-2 text-sm">
+                        <Clock3 className="size-4" />
+                        Planned hours
+                    </div>
+                    <p className="mt-2 text-2xl font-semibold">
+                        {totalPlannedHours.toFixed(1)}h
+                    </p>
+                </div>
+
+                <div className="bg-surface rounded-xl p-4 shadow-sm">
+                    <div className="text-muted-foreground flex items-center gap-2 text-sm">
+                        <LayoutGrid className="size-4" />
+                        Templates
+                    </div>
+                    <p className="mt-2 text-2xl font-semibold">
+                        {Object.keys(schedule.templates).length}
+                    </p>
+                </div>
+
+                <div className="bg-surface rounded-xl p-4 shadow-sm">
+                    <div className="text-muted-foreground flex items-center gap-2 text-sm">
+                        <CalendarDays className="size-4" />
+                        Busiest day
+                    </div>
+                    <p className="mt-2 text-lg font-semibold">
+                        {busiestDay.day}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                        {busiestDay.hours.toFixed(1)} scheduled hours
+                    </p>
+                </div>
+
+                <div className="bg-surface rounded-xl p-4 shadow-sm">
+                    <div className="text-muted-foreground flex items-center gap-2 text-sm">
+                        <StickyNote className="size-4" />
+                        Notes
+                    </div>
+                    <p className="mt-2 text-2xl font-semibold">
+                        {Object.keys(schedule.notes).length}
+                    </p>
+                </div>
+            </div>
+
+            <div className="bg-surface rounded-xl p-4 shadow-sm">
+                <div className="mb-3 flex items-center justify-between">
+                    <h3 className="font-semibold">Visible week breakdown</h3>
+                    <span className="text-sm text-gray-500">
+                        {visibleDays.length} day{visibleDays.length === 1 ? "" : "s"}
+                    </span>
+                </div>
                 <ul className="space-y-3">
-                    {/* TODO: Map over transactions data */}
-                    <li className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <span className="w-8 h-8 bg-gray-100 rounded-full" />
-                            <div>
-                                <p className="text-sm font-medium">Bill & Taxes</p>
-                                <p className="text-xs text-gray-400">Today, 16:36</p>
-                            </div>
-                        </div>
-                        <span className="text-sm font-medium text-red-500">-$154.50</span>
-                    </li>
-                    {/* Add more transaction items */}
+                    {hoursByDay.map(({ day, hours }) => (
+                        <li key={day} className="flex items-center justify-between text-sm">
+                            <span>{day}</span>
+                            <span className="font-medium text-gray-600">
+                                {hours.toFixed(1)}h
+                            </span>
+                        </li>
+                    ))}
                 </ul>
             </div>
 
-            {/* TODO: Profit and Loss Section */}
-            <div className="border-t pt-4">
-                <p className="text-sm text-gray-500">Profit and Loss</p>
-                <p className="text-2xl font-bold">$682.5</p>
-                <span className="text-emerald-600 text-sm">● On track</span>
-            </div>
-
-            {/* TODO: Spent this month with chart */}
-            <div className="border-t pt-4">
-                <div className="flex justify-between items-center">
-                    <p className="text-sm text-gray-500">Spent this month</p>
-                    <span className="text-xs text-emerald-600">+2.45%</span>
-                </div>
-                <p className="text-2xl font-bold">$682.5</p>
-                <span className="text-emerald-600 text-sm">● On track</span>
-                {/* TODO: Add line chart component */}
-                <div className="h-16 bg-gray-50 rounded mt-2 flex items-end justify-center text-gray-300 text-xs">
-                    [Chart placeholder]
-                </div>
+            <div className="bg-surface rounded-xl p-4 shadow-sm">
+                <h3 className="mb-3 font-semibold">Recent templates</h3>
+                {recentTemplates.length === 0 ? (
+                    <p className="text-sm text-gray-500">
+                        Create a template to start planning your week.
+                    </p>
+                ) : (
+                    <ul className="space-y-2">
+                        {recentTemplates.map((template) => (
+                            <li key={template.templateId} className="text-sm text-gray-600">
+                                {template.title}
+                            </li>
+                        ))}
+                    </ul>
+                )}
             </div>
         </div>
     );

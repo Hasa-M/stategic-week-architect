@@ -1,127 +1,140 @@
-import { useScheduleContext } from "@/context/hooks";
+import { useMemo } from "react";
 
-/**
- * ScheduleGrid - Main weekly calendar grid
- *
- * TODO: Implement the grid with:
- * 1. Column headers for each day (Monday - Sunday)
- * 2. Row headers for time slots (based on grid.slotDuration)
- * 3. Grid cells where activities can be placed
- * 4. ActivityBlock components for each PlacedActivity
- *
- * Data available from context:
- * - schedule.grid.days: Array of days to show
- * - schedule.grid.slotDuration: Minutes per slot (15, 30, 60, etc.)
- * - schedule.grid.startTime: Start time in minutes (e.g., 480 = 8:00 AM)
- * - schedule.grid.endTime: End time in minutes (e.g., 1200 = 8:00 PM)
- * - schedule.placedActivities: Record of activities placed on grid
- *
- * Time calculation helpers:
- * - Minutes to time: 480 minutes = 8:00 AM (480/60 = 8 hours)
- * - Row index: (activityStartTime - gridStartTime) / slotDuration
- * - Activity height: (endTime - startTime) / slotDuration * rowHeight
- */
+import { useScheduleContext } from "@/context/hooks";
+import { getColorStyles } from "@/utils";
+
+const SLOT_HEIGHT = 56;
+const TIME_COLUMN_WIDTH = 84;
+
+function formatMinutes(minutes: number) {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+
+    return `${hours.toString().padStart(2, "0")}:${mins
+        .toString()
+        .padStart(2, "0")}`;
+}
+
 export default function ScheduleGrid() {
     const schedule = useScheduleContext();
+    const { days, slotDuration, startTime, endTime } = schedule.grid;
 
-    // Get grid configuration
-    const days = schedule?.grid.days ?? [];
-    const slotDuration = schedule?.grid.slotDuration ?? 30;
-    const startTime = schedule?.grid.startTime ?? 480; // 8:00 AM
-    const endTime = schedule?.grid.endTime ?? 1200; // 8:00 PM
+    const slotTimes = useMemo(() => {
+        const totalSlots = Math.ceil((endTime - startTime) / slotDuration);
 
-    // Calculate time slots
-    const totalMinutes = endTime - startTime;
-    const numberOfSlots = totalMinutes / slotDuration;
+        return Array.from({ length: totalSlots }, (_, index) => {
+            const minutes = startTime + index * slotDuration;
+            return {
+                label: formatMinutes(minutes),
+                minutes,
+            };
+        });
+    }, [endTime, slotDuration, startTime]);
 
-    // Helper to convert minutes to time string
-    const minutesToTime = (minutes: number) => {
-        const hours = Math.floor(minutes / 60);
-        const mins = minutes % 60;
-        return `${hours}:${mins.toString().padStart(2, "0")}`;
-    };
+    const visibleActivities = useMemo(
+        () =>
+            Object.values(schedule.placedActivities).filter((activity) =>
+                days.includes(activity.day)
+            ),
+        [days, schedule.placedActivities]
+    );
 
-    // Generate time slot labels
-    const timeSlots = Array.from({ length: numberOfSlots }, (_, i) => {
-        const slotMinutes = startTime + i * slotDuration;
-        return minutesToTime(slotMinutes);
-    });
+    const columnHeight = slotTimes.length * SLOT_HEIGHT;
 
     return (
-        <div className="border rounded-lg overflow-hidden">
-            {/* Grid Header - Day columns */}
+        <div className="bg-surface overflow-x-auto rounded-2xl border border-primary/10 shadow-sm">
             <div
-                className="grid bg-gray-50 border-b"
+                className="grid min-w-190"
                 style={{
-                    gridTemplateColumns: `60px repeat(${days.length}, 1fr)`,
+                    gridTemplateColumns: `${TIME_COLUMN_WIDTH}px repeat(${days.length}, minmax(0, 1fr))`,
                 }}
             >
-                {/* Empty corner cell */}
-                <div className="p-2 border-r" />
-
-                {/* Day headers */}
+                <div className="bg-background border-b border-r border-primary/10 p-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    Time
+                </div>
                 {days.map((day) => (
                     <div
                         key={day}
-                        className="p-2 text-center font-medium text-sm border-r last:border-r-0"
+                        className="bg-background border-b border-primary/10 p-3 text-sm font-semibold text-gray-700"
                     >
                         {day}
                     </div>
                 ))}
-            </div>
 
-            {/* Grid Body - Time rows */}
-            <div className="relative">
-                {timeSlots.map((time, rowIndex) => (
-                    <div
-                        key={time}
-                        className="grid border-b last:border-b-0"
-                        style={{
-                            gridTemplateColumns: `60px repeat(${days.length}, 1fr)`,
-                            minHeight: "60px",
-                        }}
-                    >
-                        {/* Time label */}
-                        <div className="p-2 text-xs text-gray-500 border-r bg-gray-50">
-                            {time}
+                <div className="border-r border-primary/10 bg-background/70">
+                    {slotTimes.map((slot) => (
+                        <div
+                            key={slot.minutes}
+                            className="border-b border-primary/10 px-3 py-2 text-xs text-gray-500"
+                            style={{ height: SLOT_HEIGHT }}
+                        >
+                            {slot.label}
                         </div>
+                    ))}
+                </div>
 
-                        {/* Day cells */}
-                        {days.map((day) => (
-                            <div
-                                key={`${day}-${rowIndex}`}
-                                className="border-r last:border-r-0 relative"
-                            >
-                                {/*
-                                    TODO: Render ActivityBlock components here
-                                    Filter placedActivities by day and time slot
-                                    Calculate position and height based on start/end times
-                                */}
-                            </div>
-                        ))}
-                    </div>
-                ))}
+                {days.map((day) => {
+                    const dayActivities = visibleActivities.filter(
+                        (activity) => activity.day === day
+                    );
 
-                {/*
-                    TODO: Overlay PlacedActivities here with absolute positioning
-                    Each ActivityBlock should be positioned based on:
-                    - left: column index * column width
-                    - top: row index * row height
-                    - height: duration in slots * row height
-                */}
-            </div>
+                    return (
+                        <div
+                            key={day}
+                            className="relative border-l border-primary/10"
+                            style={{ height: columnHeight }}
+                        >
+                            {slotTimes.map((slot) => (
+                                <div
+                                    key={`${day}-${slot.minutes}`}
+                                    className="border-b border-primary/10"
+                                    style={{ height: SLOT_HEIGHT }}
+                                />
+                            ))}
 
-            {/* Placeholder message */}
-            <div className="p-8 text-center text-gray-400 text-sm">
-                <p>Grid structure ready!</p>
-                <p className="mt-2">
-                    TODO: Implement ActivityBlock component and render placed
-                    activities
-                </p>
-                <p className="mt-1 text-xs">
-                    Days: {days.join(", ")} | Slot: {slotDuration}min | Time:{" "}
-                    {minutesToTime(startTime)} - {minutesToTime(endTime)}
-                </p>
+                            {dayActivities.map((activity) => {
+                                const top =
+                                    ((activity.startTime - startTime) / slotDuration) *
+                                    SLOT_HEIGHT;
+                                const height = Math.max(
+                                    ((activity.endTime - activity.startTime) /
+                                        slotDuration) *
+                                        SLOT_HEIGHT -
+                                        6,
+                                    SLOT_HEIGHT * 0.85
+                                );
+                                const colorStyles = getColorStyles(activity.color);
+
+                                return (
+                                    <div
+                                        key={activity.placedId}
+                                        className={`${colorStyles.soft} ${colorStyles.border} absolute left-2 right-2 overflow-hidden rounded-xl border px-3 py-2 shadow-sm`}
+                                        style={{ top: top + 3, height }}
+                                    >
+                                        <div className={`text-sm font-semibold ${colorStyles.text}`}>
+                                            {activity.title}
+                                        </div>
+                                        <p className="mt-1 text-xs text-gray-500">
+                                            {formatMinutes(activity.startTime)} -{" "}
+                                            {formatMinutes(activity.endTime)}
+                                        </p>
+                                        {height >= SLOT_HEIGHT * 1.5 && (
+                                            <p className="mt-2 line-clamp-2 text-xs text-gray-600">
+                                                {activity.description}
+                                            </p>
+                                        )}
+                                    </div>
+                                );
+                            })}
+
+                            {dayActivities.length === 0 && (
+                                <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-xs text-gray-300">
+                                    No activities
+                                </div>
+                            )}
+                        </div>
+                    );
+                })}
             </div>
         </div>
     );

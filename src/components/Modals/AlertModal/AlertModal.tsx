@@ -8,8 +8,10 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
     AlertDialogTrigger,
-} from "@/components/Modals/AlertModal/ui/alert-dialog";
+} from "@/components/ui/alert-dialog";
+import { buttonVariants } from "@/components/ui/button";
 import type { ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
 type AlertModalProps = {
     title: string;
@@ -44,11 +46,10 @@ export function AlertModal({
                     <AlertDialogCancel>{cancelLabel}</AlertDialogCancel>
                     <AlertDialogAction
                         onClick={onConfirm}
-                        className={
-                            variant === "destructive"
-                                ? "bg-red-600 text-white hover:bg-red-700"
-                                : ""
-                        }
+                        className={cn(
+                            variant === "destructive" &&
+                                buttonVariants({ variant: "destructive" })
+                        )}
                     >
                         {confirmLabel}
                     </AlertDialogAction>

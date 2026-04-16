@@ -1,10 +1,10 @@
 import { Plus } from "lucide-react";
 import { useCallback, useMemo } from "react";
 
-import { WeeklyAppButton } from "./Button/Button";
+import { Button } from "@/components/ui/button";
 import NoteCard from "./Card/NoteCard";
 import { FormModal } from "./Forms/FormModal";
-import type { Note } from "@/types";
+import type { Note, NoteDraft } from "@/types";
 import { noteFields } from "@/fieldConfigs";
 import { useDispatch, useScheduleContext } from "@/context/hooks";
 
@@ -17,7 +17,7 @@ export default function NotesSidebar() {
     }, [schedule?.notes]);
 
     const handleAddNote = useCallback(
-        (data: Note) => {
+        (data: NoteDraft) => {
             dispatch({ type: "ADD_NOTE", payload: data });
         },
         [dispatch]
@@ -41,15 +41,15 @@ export default function NotesSidebar() {
         <div className="flex flex-col h-full">
             <div className="flex justify-between items-center mb-4">
                 <h2 className="font-semibold text-lg">Notes</h2>
-                <FormModal<Note>
+                <FormModal<NoteDraft>
                     title="Add Note"
                     description="Create a new note."
                     fields={noteFields}
                     onSubmit={(data) => handleAddNote(data)}
                 >
-                    <WeeklyAppButton size="icon-sm" className="rounded-full">
+                    <Button size="icon-sm" className="rounded-full">
                         <Plus />
-                    </WeeklyAppButton>
+                    </Button>
                 </FormModal>
             </div>
 

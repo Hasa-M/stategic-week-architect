@@ -8,7 +8,7 @@
  * and input types for a specific entity's form.
  */
 
-import type { Activity, Note, Color } from "@/types";
+import type { ActivityDraft, NoteDraft, Color } from "@/types";
 import type { FormFieldConfig } from "./components/Forms/FormField";
 
 /**
@@ -43,7 +43,7 @@ const COLOR_OPTIONS: { value: Color; label: string }[] = [
  * </FormModal>
  * ```
  */
-const activityFields: FormFieldConfig<Activity>[] = [
+const activityFields: FormFieldConfig<ActivityDraft>[] = [
     {
         name: "title",
         label: "Title",
@@ -88,7 +88,7 @@ const activityFields: FormFieldConfig<Activity>[] = [
  * </FormModal>
  * ```
  */
-type ActivityWithPropagate = Activity & { toPropagate: boolean };
+type ActivityWithPropagate = ActivityDraft & { toPropagate: boolean };
 
 const activityFieldsForEdit: FormFieldConfig<ActivityWithPropagate>[] = [
     ...activityFields,
@@ -100,7 +100,7 @@ const activityFieldsForEdit: FormFieldConfig<ActivityWithPropagate>[] = [
     },
 ];
 
-const noteFields: FormFieldConfig<Note>[] = [
+const noteFields: FormFieldConfig<NoteDraft>[] = [
     {
         name: "title",
         label: "Title",

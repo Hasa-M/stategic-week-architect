@@ -1,7 +1,7 @@
-import { Input } from "../Inputs/ui-input/input";
-import { Select } from "../Inputs/ui-select/select";
-import { Textarea } from "../Inputs/ui-textarea/textarea";
-import { Label } from "../Inputs/ui-label/label";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import CheckboxLabel from "../Inputs/CheckboxLabel/CheckboxLabel";
 
 type BaseFieldConfig<T> = {

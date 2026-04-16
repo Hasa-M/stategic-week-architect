@@ -5,10 +5,10 @@ import { Sidebar, type SidebarView } from "./components/Sidebar";
 import { GridToolbar, ScheduleGrid } from "./components/Grid";
 
 function App() {
-    const [sidebarView, setSidebarView] = useState<SidebarView>("dashboard");
+    const [sidebarView, setSidebarView] = useState<SidebarView>("summary");
 
     const toggleSidebar = () => {
-        setSidebarView((prev) => (prev === "dashboard" ? "notes" : "dashboard"));
+        setSidebarView((prev) => (prev === "summary" ? "notes" : "summary"));
     };
 
     return (

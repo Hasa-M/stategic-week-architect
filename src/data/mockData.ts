@@ -75,52 +75,38 @@ const MOCK_TEMPLATES: Record<string, Activity> = {
     },
 };
 
+function createPlacedActivity(
+    placedId: string,
+    templateId: keyof typeof MOCK_TEMPLATES,
+    day: PlacedActivity["day"],
+    startTime: number,
+    endTime: number
+): PlacedActivity {
+    const template = MOCK_TEMPLATES[templateId];
+
+    return {
+        placedId,
+        templateId: template.templateId,
+        day,
+        startTime,
+        endTime,
+        title: template.title,
+        description: template.description,
+        color: template.color,
+        subfactors: template.subfactors,
+    };
+}
+
 // ---------------------------------------------------------------------------
 // 3. PLACED ACTIVITIES (Calendar) - Converted to Record<string, PlacedActivity>
 // ---------------------------------------------------------------------------
 const MOCK_PLACED: Record<string, PlacedActivity> = {
-    tpl_1: {
-        ...MOCK_TEMPLATES["act_1"],
-        placedId: "tpl_1",
-        day: "Monday",
-        startTime: 540, // 09:00
-        endTime: 720, // 12:00
-    },
-    tpl_2: {
-        ...MOCK_TEMPLATES["act_6"],
-        placedId: "tpl_2",
-        day: "Monday",
-        startTime: 780, // 13:00
-        endTime: 840, // 14:00
-    },
-    tpl_3: {
-        ...MOCK_TEMPLATES["act_4"],
-        placedId: "tpl_3",
-        day: "Monday",
-        startTime: 840, // 14:00
-        endTime: 960, // 16:00
-    },
-    tpl_4: {
-        ...MOCK_TEMPLATES["act_5"],
-        placedId: "tpl_4",
-        day: "Tuesday",
-        startTime: 540, // 09:00
-        endTime: 780, // 13:00
-    },
-    tpl_5: {
-        ...MOCK_TEMPLATES["act_3"],
-        placedId: "tpl_5",
-        day: "Tuesday",
-        startTime: 840, // 14:00
-        endTime: 960, // 16:00
-    },
-    tpl_6: {
-        ...MOCK_TEMPLATES["act_2"],
-        placedId: "tpl_6",
-        day: "Wednesday",
-        startTime: 480, // 08:00
-        endTime: 660, // 11:00
-    },
+    tpl_1: createPlacedActivity("tpl_1", "act_1", "Monday", 540, 720),
+    tpl_2: createPlacedActivity("tpl_2", "act_6", "Monday", 780, 840),
+    tpl_3: createPlacedActivity("tpl_3", "act_4", "Monday", 840, 960),
+    tpl_4: createPlacedActivity("tpl_4", "act_5", "Tuesday", 540, 780),
+    tpl_5: createPlacedActivity("tpl_5", "act_3", "Tuesday", 840, 960),
+    tpl_6: createPlacedActivity("tpl_6", "act_2", "Wednesday", 480, 660),
 };
 
 // ---------------------------------------------------------------------------

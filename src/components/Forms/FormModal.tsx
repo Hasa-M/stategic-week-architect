@@ -11,8 +11,8 @@ import {
     DialogHeader,
     DialogTitle,
     DialogTrigger,
-} from "@/components/Modals/Modal/ui/dialog";
-import { WeeklyAppButton } from "@/components/Button/Button";
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import type { FormFieldConfig } from "@/components/Forms/FormField";
 import FormField from "@/components/Forms/FormField";
 
@@ -56,14 +56,23 @@ export function FormModal<T extends object>({
             event.preventDefault();
 
             const formData = new FormData(event.currentTarget);
-            const rawData = Object.fromEntries(formData.entries());
+            const processedData = fields.reduce<Record<string, unknown>>(
+                (accumulator, field) => {
+                    if (field.type === "checkbox") {
+                        accumulator[field.name] = formData.has(field.name);
+                        return accumulator;
+                    }
 
-            const processedData = { ...rawData } as Record<string, unknown>;
-            fields.forEach((field) => {
-                if (field.type === "checkbox") {
-                    processedData[field.name] = field.name in rawData;
-                }
-            });
+                    const value = formData.get(field.name);
+
+                    if (typeof value === "string") {
+                        accumulator[field.name] = value;
+                    }
+
+                    return accumulator;
+                },
+                {}
+            );
 
             const data = processedData as T;
 
@@ -125,16 +134,16 @@ export function FormModal<T extends object>({
 
                     <DialogFooter className="pt-4">
                         <DialogClose asChild>
-                            <WeeklyAppButton type="button" variant="outline">
+                            <Button type="button" variant="outline">
                                 <X />
                                 {effectiveCancelLabel}
-                            </WeeklyAppButton>
+                            </Button>
                         </DialogClose>
 
-                        <WeeklyAppButton type="submit">
+                        <Button type="submit">
                             <Check />
                             {effectiveSubmitLabel}
-                        </WeeklyAppButton>
+                        </Button>
                     </DialogFooter>
                 </form>
             </DialogContent>

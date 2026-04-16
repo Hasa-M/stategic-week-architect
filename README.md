@@ -5,10 +5,11 @@ A weekly schedule planning application designed to help users organize activitie
 ## Features
 
 - **Activity Templates** — Create reusable templates with title, description, color coding, and subfactors
-- **Weekly Schedule Grid** — Visual calendar interface for scheduling activities across Monday-Sunday
-- **Time Slot Management** — Configurable time slots (15, 30, 60, 90, 120, 150, 180, 240 minutes)
+- **Weekly Schedule Grid** — Visual calendar interface that renders placed activities across visible days
+- **Grid Controls** — Filter visible days, change slot duration, and place activities directly from the toolbar
 - **Color-Coded Activities** — 11 color options for visual organization
 - **Notes System** — Sidebar for reminders and tasks
+- **Schedule Summary** — Sidebar metrics for planned hours, busiest day, templates, and notes
 - **Persistent State** — LocalStorage integration for automatic save/restore
 - **Template Propagation** — Smart update logic when editing templates
 
@@ -16,10 +17,10 @@ A weekly schedule planning application designed to help users organize activitie
 
 ```
 ┌─────────────────────────────────────────────────┬──────────┐
-│  Header (Title + "View Notes" toggle)           │          │
+│  Header (Title + toggle view)                    │          │
 ├─────────────────────────────────────────────────┤ Sidebar  │
 │  Templates Bar (horizontal scroll)              │ (Notes / │
-├─────────────────────────────────────────────────┤Dashboard)│
+├─────────────────────────────────────────────────┤Summary)  │
 │  Grid Toolbar                                   │          │
 │    [Days Filter] [Time Slots] [+ Add Activity]  │          │
 ├─────────────────────────────────────────────────┤          │
@@ -58,11 +59,11 @@ The app uses React Context + useReducer for centralized state management (type-f
 ```typescript
 // Reducer actions
 type ScheduleAction =
-    | { type: "ADD_TEMPLATE"; payload: Activity }
-    | { type: "EDIT_TEMPLATE"; payload: { template: Activity; propagate: boolean } }
+    | { type: "ADD_TEMPLATE"; payload: ActivityDraft }
+    | { type: "EDIT_TEMPLATE"; payload: { activity: Activity; toPropagate: boolean } }
     | { type: "DELETE_TEMPLATE"; payload: string }
-    | { type: "PLACE_ACTIVITY"; payload: PlacedActivity }
-    | { type: "ADD_NOTE"; payload: Note }
+    | { type: "PLACE_ACTIVITY"; payload: PlacedActivityDraft }
+    | { type: "ADD_NOTE"; payload: NoteDraft }
     // ... more actions
 ```
 
@@ -71,18 +72,18 @@ type ScheduleAction =
 The `FormModal` component uses a polymorphic pattern to dynamically render forms from field configurations:
 
 ```typescript
-const activityFields: FormFieldConfig<Activity>[] = [
+const activityFields: FormFieldConfig<ActivityDraft>[] = [
     { name: "title", type: "text", label: "Title", required: true },
     { name: "description", type: "textarea", label: "Description" },
     { name: "color", type: "select", options: COLOR_OPTIONS, showColorIndicator: true },
 ];
 
-<FormModal<Activity>
-    title="Add Activity"
+<FormModal<ActivityDraft>
+    title="Add Template"
     fields={activityFields}
     onSubmit={handleSubmit}
 >
-    <Button>Add Activity</Button>
+    <Button>Add Template</Button>
 </FormModal>
 ```
 
@@ -119,11 +120,12 @@ npm run dev
 ## Roadmap
 
 ### Frontend
-- [ ] Schedule grid visualization (main calendar view)
+- [x] Schedule grid visualization (main calendar view)
 - [ ] Drag-and-drop activity placement
-- [ ] Grid toolbar (days filter, time slots)
-- [ ] Notes sidebar implementation
-- [ ] Template card edit/delete dialogs
+- [x] Grid toolbar (days filter, time slots, add activity)
+- [x] Notes sidebar implementation
+- [x] Template card edit/delete dialogs
+- [x] Schedule summary sidebar
 - [ ] Subfactors nested form field
 
 ### Backend

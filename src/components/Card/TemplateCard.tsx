@@ -1,9 +1,9 @@
-import { Trash2 } from "lucide-react";
-import type { Activity } from "@/types";
+import type { Activity, ActivityDraft } from "@/types";
 import { getColorClass } from "@/utils";
-import { FormModal } from "../Forms/FormModal";
-import { AlertModal } from "../Modals/AlertModal/AlertModal";
+import { FormModal } from "@/components/Forms/FormModal";
+import { AlertModal } from "@/components/Modals/AlertModal/AlertModal";
 import { activityFieldsForEdit } from "@/fieldConfigs";
+import CardDeleteButton from "@/components/Card/CardDeleteButton";
 
 type TemplateCardProps = {
     template: Activity;
@@ -20,7 +20,7 @@ export default function TemplateCard({
 
     return (
         <div className="relative group">
-            <FormModal<Activity & { toPropagate: boolean }>
+            <FormModal<ActivityDraft & { toPropagate: boolean }>
                 title="Edit Template"
                 description="Update this activity template."
                 fields={activityFieldsForEdit}
@@ -28,7 +28,7 @@ export default function TemplateCard({
                 initialData={{ ...template, toPropagate: true }}
                 onSubmit={(data) => onEdit({ ...data, templateId: template.templateId })}
             >
-                <div className="h-8 bg-white flex rounded-sm pr-3 gap-3 shadow-sm hover:bg-background-accent transition duration-300 ease-in-out cursor-pointer">
+                <div className="bg-surface flex h-8 cursor-pointer gap-3 rounded-sm pr-3 shadow-sm transition duration-300 ease-in-out hover:bg-background-accent">
                     <div
                         className={`w-1.5 self-stretch rounded-full shrink-0 ${colorClass}`}
                     />
@@ -50,12 +50,7 @@ export default function TemplateCard({
                 variant="destructive"
                 confirmLabel="Delete"
             >
-                <button
-                    className="absolute -top-2 -right-2 p-1 bg-white rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50"
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    <Trash2 size={14} className="text-red-600" />
-                </button>
+                <CardDeleteButton onClick={(event) => event.stopPropagation()} />
             </AlertModal>
         </div>
     );

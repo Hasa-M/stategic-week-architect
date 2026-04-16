@@ -4,9 +4,11 @@
 @theme inline {
     --color-primary: var(--color-cyan-600);
     --color-primary-hover: var(--color-cyan-700);
+    --color-destructive: var(--color-red-600);
     --color-on-primary: var(--color-white);
     --color-background: #f4f6fe;
     --color-background-accent: var(--color-sky-100);
+    --color-surface: var(--color-white);
     --font-sans: "DM Sans", sans-serif;
 }
 

@@ -18,8 +18,10 @@ const buttonVariants = cva(
                 default:
                     "bg-primary text-on-primary hover:bg-primary-hover text-base",
                 outline:
-                    "text-base border-2 border-primary bg-background shadow-xs hover:bg-background-accent",
+                    "text-base border-2 border-primary bg-surface shadow-xs hover:bg-background-accent",
                 ghost: "font-bold text-base text-primary hover:text-primary-hover",
+                destructive:
+                    "bg-destructive text-on-primary hover:opacity-90 text-base",
             },
             size: {
                 default: "h-9 px-4 py-2 has-[>svg]:px-3",

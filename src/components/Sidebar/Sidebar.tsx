@@ -1,7 +1,7 @@
 import NotesSidebar from "../NotesSidebar";
 import SummaryDashboard from "./SummaryDashboard";
 
-export type SidebarView = "dashboard" | "notes";
+export type SidebarView = "summary" | "notes";
 
 type SidebarProps = {
     view: SidebarView;
