@@ -20,7 +20,7 @@ export type Day =
     | "Saturday"
     | "Sunday";
 
-export type SlotWindow = 15 | 30 | 60 | 90 | 120 | 150 | 180 | 240;
+export type SlotWindow = 30 | 60;
 
 export type Subfactor = {
     title: string;
@@ -54,6 +54,8 @@ export type DaysGrid = {
     startTime: number;
     endTime: number;
 };
+
+export type GridTimeRange = Pick<DaysGrid, "startTime" | "endTime">;
 
 export type Note = {
     id: string;
@@ -120,6 +122,7 @@ export type ScheduleAction =
     | { type: "REMOVE_PLACED_ACTIVITY"; payload: string }
     | { type: "SET_GRID_DAYS"; payload: Day[] }
     | { type: "SET_GRID_SLOT_DURATION"; payload: SlotWindow }
+    | { type: "SET_GRID_TIME_RANGE"; payload: GridTimeRange }
     | { type: "ADD_NOTE"; payload: NoteDraft }
     | { type: "EDIT_NOTE"; payload: Note }
     | { type: "REMOVE_NOTE"; payload: string };

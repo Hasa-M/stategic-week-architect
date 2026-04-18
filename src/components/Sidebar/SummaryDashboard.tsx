@@ -1,23 +1,43 @@
 import { CalendarDays, Clock3, LayoutGrid, StickyNote } from "lucide-react";
+import { useMemo } from "react";
 
 import { useScheduleContext } from "@/context/hooks";
+import { clipActivityToVisibleRange } from "@/lib/grid";
 
 export default function SummaryDashboard() {
     const schedule = useScheduleContext();
     const visibleDays = schedule.grid.days;
-    const placedActivities = Object.values(schedule.placedActivities).filter(
-        (activity) => visibleDays.includes(activity.day)
+    const visibleActivities = useMemo(
+        () =>
+            Object.values(schedule.placedActivities)
+                .filter((activity) => visibleDays.includes(activity.day))
+                .map((activity) =>
+                    clipActivityToVisibleRange(
+                        activity,
+                        schedule.grid.startTime,
+                        schedule.grid.endTime
+                    )
+                )
+                .filter((activity) => activity !== null),
+        [
+            schedule.grid.endTime,
+            schedule.grid.startTime,
+            schedule.placedActivities,
+            visibleDays,
+        ]
     );
-    const totalPlannedHours = placedActivities.reduce(
-        (total, activity) => total + (activity.endTime - activity.startTime) / 60,
+    const totalPlannedHours = visibleActivities.reduce(
+        (total, activity) =>
+            total + (activity.visibleEndTime - activity.visibleStartTime) / 60,
         0
     );
     const hoursByDay = visibleDays.map((day) => {
-        const hours = placedActivities
+        const hours = visibleActivities
             .filter((activity) => activity.day === day)
             .reduce(
                 (total, activity) =>
-                    total + (activity.endTime - activity.startTime) / 60,
+                    total +
+                    (activity.visibleEndTime - activity.visibleStartTime) / 60,
                 0
             );
 
@@ -38,8 +58,8 @@ export default function SummaryDashboard() {
                     {schedule.name}
                 </p>
                 <p className="mt-3 text-sm text-slate-500">
-                    {placedActivities.length} planned activities across {visibleDays.length}{" "}
-                    visible days
+                    {visibleActivities.length} visible activit{visibleActivities.length === 1 ? "y" : "ies"} across {visibleDays.length}{" "}
+                    visible day{visibleDays.length === 1 ? "" : "s"}
                 </p>
             </div>
 

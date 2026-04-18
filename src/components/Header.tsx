@@ -1,4 +1,9 @@
-import { ArrowRightIcon, Pencil, Check, X } from "lucide-react";
+import {
+    ArrowRightIcon,
+    Check,
+    Pencil,
+    X,
+} from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -7,11 +12,18 @@ import { useDispatch, useScheduleContext } from "@/context/hooks";
 import type { SidebarView } from "./Sidebar/Sidebar";
 
 type HeaderProps = {
+    layoutMode: "desktop" | "tablet" | "mobile";
     sidebarView: SidebarView;
     onToggleSidebar: () => void;
+    onOpenSidebar: () => void;
 };
 
-export default function Header({ sidebarView, onToggleSidebar }: HeaderProps) {
+export default function Header({
+    layoutMode,
+    sidebarView,
+    onToggleSidebar,
+    onOpenSidebar,
+}: HeaderProps) {
     const input = useRef<HTMLInputElement>(null);
     const [isEdit, setIsEdit] = useState(false);
 
@@ -36,11 +48,35 @@ export default function Header({ sidebarView, onToggleSidebar }: HeaderProps) {
         setIsEdit(false);
     }
 
+    const action =
+        layoutMode === "mobile"
+            ? null
+            : layoutMode === "tablet"
+              ? {
+                    label: "Open sidebar",
+                    onClick: onOpenSidebar,
+                    icon: ArrowRightIcon,
+                    size: "lg" as const,
+                    className: "w-full md:w-auto",
+                }
+              : {
+                    label:
+                        sidebarView === "summary"
+                            ? "View all notes"
+                            : "View dashboard",
+                    onClick: onToggleSidebar,
+                    icon: ArrowRightIcon,
+                    size: "lg" as const,
+                    className: "w-full md:w-auto",
+                };
+
+    const ActionIcon = action?.icon;
+
     let title = (
         <>
             <div className="min-w-0">
                 <span className="app-badge mb-3 w-fit">Weekly Schedule</span>
-                <p className="text-nowrap text-ellipsis text-[32px]/10 font-bold tracking-tight text-slate-800">
+                <p className="max-w-[18ch] text-[26px]/8 font-bold tracking-tight text-slate-800 md:max-w-none md:text-[32px]/10">
                     {schedule?.name ?? "Welcome to Your Weekly Schedule!"}
                 </p>
             </div>
@@ -88,14 +124,21 @@ export default function Header({ sidebarView, onToggleSidebar }: HeaderProps) {
     }
 
     return (
-        <header className="app-panel flex flex-row flex-wrap items-center gap-4 p-5 md:p-6">
-            <span className="group flex min-w-0 flex-1 items-center gap-3">
+        <header className="app-panel flex flex-col gap-4 p-5 md:flex-row md:items-center md:justify-between md:p-6">
+            <span className="group flex min-w-0 flex-1 items-start gap-3">
                 {title}
             </span>
-            <Button variant="ghost" size="lg" onClick={onToggleSidebar}>
-                {sidebarView === "summary" ? "View all notes" : "View summary"}{" "}
-                <ArrowRightIcon />
-            </Button>
+            {action && ActionIcon ? (
+                <Button
+                    variant="ghost"
+                    size={action.size}
+                    className={action.className}
+                    onClick={action.onClick}
+                >
+                    {action.label}
+                    <ActionIcon />
+                </Button>
+            ) : null}
         </header>
     );
 }

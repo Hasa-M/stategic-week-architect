@@ -6,7 +6,7 @@ A weekly schedule planning application designed to help users organize activitie
 
 - **Activity Templates** — Create reusable templates with title, description, color coding, and subfactors
 - **Weekly Schedule Grid** — Visual calendar interface that renders placed activities across visible days
-- **Grid Controls** — Filter visible days, change slot duration, and place activities directly from the toolbar
+- **Grid Controls** — Filter visible days, choose a visible time range, switch slot size between 30 min and 1 hour, and place activities directly from the toolbar
 - **Color-Coded Activities** — 11 color options for visual organization
 - **Notes System** — Sidebar for notes linked to placed activities
 - **Schedule Summary** — Sidebar metrics for planned hours, busiest day, templates, and notes
@@ -22,7 +22,7 @@ A weekly schedule planning application designed to help users organize activitie
 │  Templates Bar (horizontal scroll)              │ (Notes / │
 ├─────────────────────────────────────────────────┤Summary)  │
 │  Grid Toolbar                                   │          │
-│    [Days Filter] [Time Slots] [+ Add Activity]  │          │
+│    [Days Filter] [Slot Size] [Time Range] [+ Add Activity] │          │
 ├─────────────────────────────────────────────────┤          │
 │  Schedule Grid                                  │          │
 └─────────────────────────────────────────────────┴──────────┘

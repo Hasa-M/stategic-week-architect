@@ -1,4 +1,10 @@
 import {
+    DEFAULT_GRID_END_TIME,
+    DEFAULT_GRID_SLOT_DURATION,
+    DEFAULT_GRID_START_TIME,
+    normalizeGridSettings,
+} from "@/lib/grid";
+import {
     type Activity,
     type ActivityNoteDraft,
     type ActivityNoteInput,
@@ -23,9 +29,9 @@ export const initialState: ScheduleState = {
             "Saturday",
             "Sunday",
         ],
-        slotDuration: 60,
-        startTime: 480,
-        endTime: 1439,
+        slotDuration: DEFAULT_GRID_SLOT_DURATION,
+        startTime: DEFAULT_GRID_START_TIME,
+        endTime: DEFAULT_GRID_END_TIME,
     },
     notes: {},
 };
@@ -36,7 +42,10 @@ export function scheduleReducer(
 ): ScheduleState {
     switch (action.type) {
         case "LOAD_STATE":
-            return action.payload;
+            return {
+                ...action.payload,
+                grid: normalizeGridSettings(action.payload.grid),
+            };
 
         case "SET_NAME":
             return {
@@ -219,19 +228,28 @@ export function scheduleReducer(
         case "SET_GRID_DAYS":
             return {
                 ...state,
-                grid: {
+                grid: normalizeGridSettings({
                     ...state.grid,
                     days: action.payload,
-                },
+                }),
             };
 
         case "SET_GRID_SLOT_DURATION":
             return {
                 ...state,
-                grid: {
+                grid: normalizeGridSettings({
                     ...state.grid,
                     slotDuration: action.payload,
-                },
+                }),
+            };
+
+        case "SET_GRID_TIME_RANGE":
+            return {
+                ...state,
+                grid: normalizeGridSettings({
+                    ...state.grid,
+                    ...action.payload,
+                }),
             };
 
         case "ADD_NOTE": {

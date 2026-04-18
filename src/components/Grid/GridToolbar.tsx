@@ -3,30 +3,39 @@ import { useMemo } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 import { useDispatch, useScheduleContext } from "@/context/hooks";
+import {
+    ALL_DAYS,
+    GRID_HOUR_OPTIONS,
+    hourToMinutes,
+    minutesToHour,
+} from "@/lib/grid";
 import type { Day, PlacedActivityDraft, SlotWindow } from "@/types";
 import PlaceActivityModal from "./PlaceActivityModal";
 
-const ALL_DAYS: Day[] = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday",
+const SLOT_OPTIONS: {
+    value: SlotWindow;
+    label: string;
+    compactLabel: string;
+}[] = [
+    { value: 30, label: "30 min", compactLabel: "30m" },
+    { value: 60, label: "1 hour", compactLabel: "1h" },
 ];
 
-const SLOT_OPTIONS: { value: SlotWindow; label: string }[] = [
-    { value: 15, label: "15 min" },
-    { value: 30, label: "30 min" },
-    { value: 60, label: "1 hour" },
-    { value: 90, label: "90 min" },
-    { value: 120, label: "2 hours" },
-    { value: 150, label: "2.5 hours" },
-    { value: 180, label: "3 hours" },
-    { value: 240, label: "4 hours" },
-];
+type GridSettingsControlsProps = {
+    className?: string;
+    stacked?: boolean;
+};
+
+type GridToolbarProps = {
+    layout?: "desktop" | "mobile";
+    onOpenSettings?: () => void;
+};
+
+function formatRangeLabel(startTime: number, endTime: number) {
+    return `${minutesToHour(startTime)}-${minutesToHour(endTime)}`;
+}
 
 function formatMinutes(minutes: number) {
     const hours = Math.floor(minutes / 60);
@@ -37,7 +46,7 @@ function formatMinutes(minutes: number) {
         .padStart(2, "0")}`;
 }
 
-export default function GridToolbar() {
+function AddActivityAction({ className }: { className?: string }) {
     const schedule = useScheduleContext();
     const dispatch = useDispatch();
 
@@ -68,6 +77,49 @@ export default function GridToolbar() {
         return options;
     }, [schedule.grid.endTime, schedule.grid.slotDuration, schedule.grid.startTime]);
 
+    const handlePlaceActivity = (data: PlacedActivityDraft) => {
+        dispatch({
+            type: "PLACE_ACTIVITY",
+            payload: data,
+        });
+    };
+
+    if (templateOptions.length === 0) {
+        return (
+            <Button
+                className={cn("rounded-full", className)}
+                disabled
+                title="Create at least one template before placing activities on the grid."
+            >
+                <Plus size={16} />
+                Add Activity
+            </Button>
+        );
+    }
+
+    return (
+        <PlaceActivityModal
+            templateOptions={templateOptions}
+            timeOptions={timeOptions}
+            onSubmit={handlePlaceActivity}
+        >
+            <Button className={cn("rounded-full", className)}>
+                <Plus size={16} />
+                Add Activity
+            </Button>
+        </PlaceActivityModal>
+    );
+}
+
+export function GridSettingsControls({
+    className,
+    stacked = false,
+}: GridSettingsControlsProps) {
+    const schedule = useScheduleContext();
+    const dispatch = useDispatch();
+    const startHour = minutesToHour(schedule.grid.startTime);
+    const endHour = minutesToHour(schedule.grid.endTime);
+
     const toggleDay = (day: Day) => {
         const selectedDays = schedule.grid.days;
         const isSelected = selectedDays.includes(day);
@@ -85,23 +137,58 @@ export default function GridToolbar() {
         dispatch({ type: "SET_GRID_DAYS", payload: nextDays });
     };
 
-    const handleSlotDurationChange = (value: string) => {
+    const handleSlotDurationChange = (slotDuration: SlotWindow) => {
         dispatch({
             type: "SET_GRID_SLOT_DURATION",
-            payload: Number(value) as SlotWindow,
+            payload: slotDuration,
         });
     };
 
-    const handlePlaceActivity = (data: PlacedActivityDraft) => {
+    const handleStartHourChange = (value: string) => {
+        const nextStartHour = Number(value);
+
         dispatch({
-            type: "PLACE_ACTIVITY",
-            payload: data,
+            type: "SET_GRID_TIME_RANGE",
+            payload: {
+                startTime: hourToMinutes(nextStartHour),
+                endTime: hourToMinutes(Math.max(nextStartHour + 1, endHour)),
+            },
         });
     };
+
+    const handleEndHourChange = (value: string) => {
+        const nextEndHour = Number(value);
+
+        dispatch({
+            type: "SET_GRID_TIME_RANGE",
+            payload: {
+                startTime: hourToMinutes(Math.min(startHour, nextEndHour - 1)),
+                endTime: hourToMinutes(nextEndHour),
+            },
+        });
+    };
+
+    const startHourOptions = GRID_HOUR_OPTIONS.slice(0, -1).map((hour) => ({
+        value: String(hour),
+        label: String(hour),
+        disabled: hour >= endHour,
+    }));
+
+    const endHourOptions = GRID_HOUR_OPTIONS.slice(1).map((hour) => ({
+        value: String(hour),
+        label: String(hour),
+        disabled: hour <= startHour,
+    }));
 
     return (
-        <div className="flex flex-col gap-4 py-1 xl:flex-row xl:items-center">
-            <div className="app-panel-muted flex flex-1 flex-wrap items-center gap-2 p-3.5">
+        <div
+            className={cn(
+                "flex flex-col gap-4",
+                !stacked && "xl:flex-row xl:flex-wrap xl:items-center",
+                className
+            )}
+        >
+            <div className="app-panel-muted flex flex-1 flex-wrap items-center gap-2 p-3.5 xl:min-w-92">
                 <span className="mr-2 text-sm font-medium text-slate-500">
                     Visible days
                 </span>
@@ -123,44 +210,128 @@ export default function GridToolbar() {
                 })}
             </div>
 
-            <div className="app-panel-muted flex flex-1 items-center gap-3 p-3.5">
+            <div className="app-panel-muted flex flex-1 flex-wrap items-center gap-3 p-3.5 xl:min-w-68">
                 <span className="shrink-0 text-sm font-medium text-slate-500">
                     Slot size
                 </span>
-                <Select
-                    id="slot-duration"
-                    name="slotDuration"
-                    value={String(schedule.grid.slotDuration)}
-                    onValueChange={handleSlotDurationChange}
-                    options={SLOT_OPTIONS.map((option) => ({
-                        value: String(option.value),
-                        label: option.label,
-                    }))}
-                    className="max-w-44"
-                />
+                <div className="inline-flex min-w-0 rounded-full border border-primary/12 bg-white/82 p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.92),0_10px_24px_rgba(15,23,42,0.05)]">
+                    {SLOT_OPTIONS.map((option) => {
+                        const isSelected = schedule.grid.slotDuration === option.value;
+
+                        return (
+                            <button
+                                key={option.value}
+                                type="button"
+                                className={cn(
+                                    "rounded-full px-3.5 py-2 text-sm font-medium transition-all",
+                                    isSelected
+                                        ? "bg-primary text-on-primary shadow-[0_10px_20px_rgba(8,145,178,0.22)]"
+                                        : "text-slate-500 hover:bg-sky-50/80 hover:text-slate-700"
+                                )}
+                                onClick={() => handleSlotDurationChange(option.value)}
+                                aria-pressed={isSelected}
+                            >
+                                <span className="sm:hidden">{option.compactLabel}</span>
+                                <span className="hidden sm:inline">{option.label}</span>
+                            </button>
+                        );
+                    })}
+                </div>
             </div>
 
-            {templateOptions.length === 0 ? (
-                <Button
-                    className="rounded-full"
-                    disabled
-                    title="Create at least one template before placing activities on the grid."
-                >
-                    <Plus size={16} />
-                    Add Activity
-                </Button>
-            ) : (
-                <PlaceActivityModal
-                    templateOptions={templateOptions}
-                    timeOptions={timeOptions}
-                    onSubmit={handlePlaceActivity}
-                >
-                    <Button className="rounded-full">
-                        <Plus size={16} />
-                        Add Activity
-                    </Button>
-                </PlaceActivityModal>
-            )}
+            <div className="app-panel-muted flex flex-1 flex-wrap items-center gap-3 p-3.5 xl:min-w-72">
+                <span className="shrink-0 text-sm font-medium text-slate-500">
+                    Time range
+                </span>
+                <div className="flex min-w-0 flex-1 items-center gap-2">
+                    <Select
+                        id="grid-start-time"
+                        name="gridStartTime"
+                        value={String(startHour)}
+                        onValueChange={handleStartHourChange}
+                        options={startHourOptions}
+                        className="min-w-24 flex-1"
+                    />
+                    <span className="text-sm font-medium text-slate-400">to</span>
+                    <Select
+                        id="grid-end-time"
+                        name="gridEndTime"
+                        value={String(endHour)}
+                        onValueChange={handleEndHourChange}
+                        options={endHourOptions}
+                        className="min-w-24 flex-1"
+                    />
+                </div>
+            </div>
         </div>
+    );
+}
+
+function GridToolbarContent({
+    layout,
+    onOpenSettings,
+    slotSizeLabel,
+    timeRangeLabel,
+}: GridToolbarProps & { slotSizeLabel: string; timeRangeLabel: string }) {
+    const schedule = useScheduleContext();
+
+    if (layout === "mobile") {
+        return (
+            <div className="flex flex-col gap-3 py-1">
+                <div className="app-panel-muted flex flex-col gap-3 p-3.5 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0">
+                        <p className="text-sm font-semibold text-slate-700">
+                            Grid settings
+                        </p>
+                        <p className="text-sm text-slate-500">
+                            {schedule.grid.days.length} visible day
+                            {schedule.grid.days.length === 1 ? "" : "s"} · {slotSizeLabel} · {timeRangeLabel}
+                        </p>
+                    </div>
+
+                    <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full sm:w-auto"
+                        onClick={onOpenSettings}
+                    >
+                        Open settings
+                    </Button>
+                </div>
+
+                <AddActivityAction className="w-full justify-center" />
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex flex-col gap-4 py-1 xl:flex-row xl:items-center">
+            <GridSettingsControls className="flex-1" />
+            <AddActivityAction />
+        </div>
+    );
+}
+
+export default function GridToolbar({
+    layout = "desktop",
+    onOpenSettings,
+}: GridToolbarProps) {
+    const schedule = useScheduleContext();
+
+    const slotSizeLabel =
+        SLOT_OPTIONS.find((option) => option.value === schedule.grid.slotDuration)
+            ?.label ?? `${schedule.grid.slotDuration} min`;
+    const timeRangeLabel = formatRangeLabel(
+        schedule.grid.startTime,
+        schedule.grid.endTime
+    );
+
+    return (
+        <GridToolbarContent
+            layout={layout}
+            onOpenSettings={onOpenSettings}
+            slotSizeLabel={slotSizeLabel}
+            timeRangeLabel={timeRangeLabel}
+        />
     );
 }

@@ -1,3 +1,4 @@
+import { normalizeGridSettings } from "@/lib/grid";
 import type { ScheduleState } from "@/types";
 
 const STORAGE_KEY = "schedule_state_v1";
@@ -61,6 +62,7 @@ function normalizeScheduleState(state: ScheduleState): ScheduleState {
 
     return {
         ...state,
+        grid: normalizeGridSettings(state.grid),
         notes: normalizedNotes,
     };
 }

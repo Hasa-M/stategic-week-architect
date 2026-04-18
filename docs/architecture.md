@@ -27,7 +27,7 @@ Working or mostly working areas:
 - Local persistence through `localStorage`
 - Generic modal-based forms driven by field configuration
 - A real schedule grid that renders placed activities
-- A real grid toolbar with day filtering, slot duration changes, and activity placement
+- A real grid toolbar with day filtering, visible time-range controls, slot-size changes, and activity placement
 - A real summary sidebar with schedule metrics instead of placeholder finance content
 
 Incomplete or placeholder areas:

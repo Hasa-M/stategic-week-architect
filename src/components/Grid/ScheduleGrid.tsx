@@ -10,6 +10,10 @@ import {
 
 import { useDispatch, useScheduleContext } from "@/context/hooks";
 import { EditPlacedActivityModal } from "@/components/Grid/PlaceActivityModal";
+import {
+    clipActivityToVisibleRange,
+    type VisiblePlacedActivity,
+} from "@/lib/grid";
 import { getColorStyles } from "@/utils";
 import type {
     ActivityNoteInput,
@@ -135,14 +139,14 @@ function resolveStartTimeFromPointer(
     return clamp(unclampedStartTime, gridStartTime, maxStartTime);
 }
 
-function buildDayOverlapLayout(dayActivities: PlacedActivity[]) {
+function buildDayOverlapLayout(dayActivities: VisiblePlacedActivity[]) {
     const sortedActivities = [...dayActivities].sort((left, right) => {
-        if (left.startTime !== right.startTime) {
-            return left.startTime - right.startTime;
+        if (left.visibleStartTime !== right.visibleStartTime) {
+            return left.visibleStartTime - right.visibleStartTime;
         }
 
-        if (left.endTime !== right.endTime) {
-            return left.endTime - right.endTime;
+        if (left.visibleEndTime !== right.visibleEndTime) {
+            return left.visibleEndTime - right.visibleEndTime;
         }
 
         return left.placedId.localeCompare(right.placedId);
@@ -175,27 +179,27 @@ function buildDayOverlapLayout(dayActivities: PlacedActivity[]) {
     sortedActivities.forEach((activity) => {
         if (
             clusterEntries.length > 0 &&
-            activity.startTime >= clusterMaxEnd
+            activity.visibleStartTime >= clusterMaxEnd
         ) {
             finalizeCluster();
         }
 
         let laneIndex = laneEndTimes.findIndex(
-            (laneEndTime) => activity.startTime >= laneEndTime
+            (laneEndTime) => activity.visibleStartTime >= laneEndTime
         );
 
         if (laneIndex === -1) {
             laneIndex = laneEndTimes.length;
-            laneEndTimes.push(activity.endTime);
+            laneEndTimes.push(activity.visibleEndTime);
         } else {
-            laneEndTimes[laneIndex] = activity.endTime;
+            laneEndTimes[laneIndex] = activity.visibleEndTime;
         }
 
         clusterEntries.push({
             placedId: activity.placedId,
             laneIndex,
         });
-        clusterMaxEnd = Math.max(clusterMaxEnd, activity.endTime);
+        clusterMaxEnd = Math.max(clusterMaxEnd, activity.visibleEndTime);
     });
 
     finalizeCluster();
@@ -224,7 +228,7 @@ export default function ScheduleGrid() {
         });
     }, [endTime, slotDuration, startTime]);
 
-    const visibleActivities = useMemo(
+    const dayActivities = useMemo(
         () =>
             Object.values(schedule.placedActivities).filter((activity) =>
                 days.includes(activity.day)
@@ -274,21 +278,27 @@ export default function ScheduleGrid() {
     }, [schedule.notes]);
 
     const renderedActivities = useMemo(() => {
-        if (!dragState?.didDrag) {
-            return visibleActivities;
-        }
+        const nextActivities = dragState?.didDrag
+            ? dayActivities.map((activity) =>
+                  activity.placedId === dragState.placedId
+                      ? {
+                            ...activity,
+                            day: dragState.previewDay,
+                            startTime: dragState.previewStartTime,
+                            endTime: dragState.previewStartTime + dragState.duration,
+                        }
+                      : activity
+              )
+            : dayActivities;
 
-        return visibleActivities.map((activity) =>
-            activity.placedId === dragState.placedId
-                ? {
-                      ...activity,
-                      day: dragState.previewDay,
-                      startTime: dragState.previewStartTime,
-                      endTime: dragState.previewStartTime + dragState.duration,
-                  }
-                : activity
-        );
-    }, [dragState, visibleActivities]);
+        return nextActivities
+            .map((activity) =>
+                clipActivityToVisibleRange(activity, startTime, endTime)
+            )
+            .filter(
+                (activity): activity is VisiblePlacedActivity => activity !== null
+            );
+    }, [dayActivities, dragState, endTime, startTime]);
 
     const overlapLayouts = useMemo(() => {
         return days.reduce<Record<string, OverlapLayout>>((accumulator, day) => {
@@ -551,17 +561,24 @@ export default function ScheduleGrid() {
                                         laneCount: 1,
                                         isOverlapping: false,
                                     };
+                                    const isRangeClipped =
+                                        activity.visibleStartTime !== activity.startTime ||
+                                        activity.visibleEndTime !== activity.endTime;
                                     const top =
-                                        ((activity.startTime - startTime) /
+                                        ((activity.visibleStartTime - startTime) /
                                             slotDuration) *
                                         SLOT_HEIGHT;
-                                    const height = Math.max(
-                                        ((activity.endTime - activity.startTime) /
+                                    const rawHeight = Math.max(
+                                        ((activity.visibleEndTime -
+                                            activity.visibleStartTime) /
                                             slotDuration) *
                                             SLOT_HEIGHT -
                                             6,
-                                        SLOT_HEIGHT * 0.85
+                                        10
                                     );
+                                    const height = isRangeClipped
+                                        ? rawHeight
+                                        : Math.max(rawHeight, SLOT_HEIGHT * 0.85);
                                     const colorStyles = getColorStyles(
                                         activity.color
                                     );
