@@ -9,19 +9,19 @@ const buttonVariants = cva(
         "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all",
         "disabled:pointer-events-none disabled:opacity-50",
         "[&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0",
-        "outline-none focus-visible:ring-[4px] focus-visible:ring-primary/15",
+        "outline-none focus-visible:ring-[4px] focus-visible:ring-[color:var(--app-focus-ring)]",
         "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
     ],
     {
         variants: {
             variant: {
                 default:
-                    "bg-primary text-on-primary text-base shadow-[0_14px_28px_rgba(8,145,178,0.22)] hover:-translate-y-0.5 hover:bg-primary-hover hover:shadow-[0_18px_36px_rgba(8,145,178,0.26)]",
+                    "bg-primary text-on-primary text-base shadow-[var(--app-shadow-button-primary)] hover:-translate-y-0.5 hover:bg-primary-hover hover:shadow-[var(--app-shadow-button-primary-hover)]",
                 outline:
-                    "border border-primary/15 bg-white/82 text-base text-slate-700 shadow-[0_10px_24px_rgba(15,23,42,0.06)] hover:-translate-y-0.5 hover:border-primary/25 hover:bg-white",
-                ghost: "bg-white/60 font-semibold text-base text-slate-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] hover:bg-white/80 hover:text-primary",
+                    "border border-[color:var(--app-border-subtle)] bg-[color:var(--app-button-outline-bg)] text-base text-[color:var(--app-text)] shadow-[var(--app-shadow-button-outline)] hover:-translate-y-0.5 hover:border-[color:var(--app-border-strong)] hover:bg-[color:var(--app-button-outline-bg-hover)]",
+                ghost: "bg-[color:var(--app-button-ghost-bg)] font-semibold text-base text-[color:var(--app-text-soft)] shadow-[var(--app-shadow-button-ghost)] hover:bg-[color:var(--app-button-ghost-bg-hover)] hover:text-primary",
                 destructive:
-                    "bg-destructive text-base text-on-primary shadow-[0_14px_28px_rgba(220,38,38,0.18)] hover:-translate-y-0.5 hover:opacity-95 hover:shadow-[0_18px_34px_rgba(220,38,38,0.22)]",
+                    "bg-destructive text-base text-on-primary shadow-[var(--app-shadow-button-destructive)] hover:-translate-y-0.5 hover:opacity-95 hover:shadow-[var(--app-shadow-button-destructive-hover)]",
             },
             size: {
                 default: "h-10 rounded-full px-4 py-2 has-[>svg]:px-3",

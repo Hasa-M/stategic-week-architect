@@ -41,7 +41,7 @@ export default function TemplateCard({
                 <div
                     className={`w-1.5 self-stretch rounded-full shrink-0 ${colorClass}`}
                 />
-                <span className="flex-1 self-center truncate font-medium text-slate-700">
+                <span className="app-text flex-1 self-center truncate font-medium">
                     {template.title}
                 </span>
             </div>

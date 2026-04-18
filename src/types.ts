@@ -11,6 +11,10 @@ export type Color =
     | "slate"
     | "stone";
 
+export type ThemeMode = "light" | "high-contrast" | "dark";
+
+export const DEFAULT_THEME_MODE: ThemeMode = "light";
+
 export type Day =
     | "Monday"
     | "Tuesday"
@@ -92,6 +96,7 @@ export type SavePlacedActivityPayload = PlacedActivityUpdate & {
 export type ScheduleState = {
     id: string;
     name: string;
+    theme: ThemeMode;
     templates: Record<string, Activity>;
     placedActivities: Record<string, PlacedActivity>;
     grid: DaysGrid;
@@ -101,6 +106,7 @@ export type ScheduleState = {
 export type ScheduleAction =
     | { type: "LOAD_STATE"; payload: ScheduleState }
     | { type: "SET_NAME"; payload: string }
+    | { type: "SET_THEME"; payload: ThemeMode }
     | { type: "ADD_TEMPLATE"; payload: ActivityDraft }
     | {
           type: "EDIT_TEMPLATE";

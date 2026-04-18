@@ -1,5 +1,9 @@
 import { normalizeGridSettings } from "@/lib/grid";
-import type { ScheduleState } from "@/types";
+import {
+    DEFAULT_THEME_MODE,
+    type ScheduleState,
+    type ThemeMode,
+} from "@/types";
 
 const STORAGE_KEY = "schedule_state_v1";
 const VALID_COLORS = new Set([
@@ -16,20 +20,31 @@ const VALID_COLORS = new Set([
     "stone",
 ]);
 
+type PersistedScheduleState = Omit<ScheduleState, "theme"> & {
+    theme?: ThemeMode;
+};
+
+function isThemeMode(value: unknown): value is ThemeMode {
+    return (
+        value === "light" || value === "high-contrast" || value === "dark"
+    );
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === "object" && value !== null;
 }
 
-function isScheduleState(value: unknown): value is ScheduleState {
+function isScheduleState(value: unknown): value is PersistedScheduleState {
     if (!isRecord(value)) {
         return false;
     }
 
-    const { id, name, templates, placedActivities, notes, grid } = value;
+    const { id, name, templates, placedActivities, notes, grid, theme } = value;
 
     return (
         typeof id === "string" &&
         typeof name === "string" &&
+        (theme === undefined || isThemeMode(theme)) &&
         isRecord(templates) &&
         isRecord(placedActivities) &&
         isRecord(notes) &&
@@ -41,7 +56,7 @@ function isScheduleState(value: unknown): value is ScheduleState {
     );
 }
 
-function normalizeScheduleState(state: ScheduleState): ScheduleState {
+function normalizeScheduleState(state: PersistedScheduleState): ScheduleState {
     const normalizedNotes = Object.fromEntries(
         Object.entries(state.notes).filter(([, note]) => {
             return (
@@ -62,6 +77,7 @@ function normalizeScheduleState(state: ScheduleState): ScheduleState {
 
     return {
         ...state,
+        theme: isThemeMode(state.theme) ? state.theme : DEFAULT_THEME_MODE,
         grid: normalizeGridSettings(state.grid),
         notes: normalizedNotes,
     };

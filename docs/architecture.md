@@ -27,12 +27,13 @@ Working or mostly working areas:
 - Local persistence through `localStorage`
 - Generic modal-based forms driven by field configuration
 - A real schedule grid that renders placed activities
+- Rescheduling placed activities directly inside the grid with pointer and touch drag
 - A real grid toolbar with day filtering, visible time-range controls, slot-size changes, and activity placement
 - A real summary sidebar with schedule metrics instead of placeholder finance content
 
 Incomplete or placeholder areas:
 
-- Drag and drop placement is still not implemented.
+- Dragging templates directly from the templates bar into the grid is still not implemented.
 - Nested form support for complex `subfactors` editing is still not implemented.
 - The placed-activity editing surface is still minimal compared with template and note editing.
 

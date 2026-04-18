@@ -1,4 +1,5 @@
 import {
+    DEFAULT_THEME_MODE,
     type ScheduleState,
     type Activity,
     type PlacedActivity,
@@ -149,6 +150,7 @@ const MOCK_NOTES_DATA: Record<string, Note> = {
 export const INITIAL_SCHEDULE_STATE: ScheduleState = {
     id: "sched_1",
     name: "My Weekly Plan",
+    theme: DEFAULT_THEME_MODE,
     grid: MOCK_GRID,
     templates: MOCK_TEMPLATES,
     placedActivities: MOCK_PLACED,

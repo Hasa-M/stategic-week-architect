@@ -21,7 +21,7 @@ export default function Sidebar({
     return (
         <div
             className={cn(
-                "app-panel flex h-full min-h-0 flex-col overflow-hidden p-4 md:p-5",
+                "app-panel flex h-full min-h-0 w-full flex-col overflow-hidden p-4 md:p-5",
                 className
             )}
         >
@@ -29,7 +29,7 @@ export default function Sidebar({
                 <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                     <div>
                         <span className="app-badge mb-2 w-fit">Sidebar</span>
-                        <p className="text-lg font-semibold text-slate-800">
+                        <p className="app-text-strong text-lg font-semibold">
                             Dashboard or notes
                         </p>
                     </div>

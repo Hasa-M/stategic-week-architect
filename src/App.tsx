@@ -54,6 +54,7 @@ function App() {
     const [tabletSidebarOpen, setTabletSidebarOpen] = useState(false);
     const [mobileView, setMobileView] = useState<MobileView>("grid");
     const [mobileSettingsOpen, setMobileSettingsOpen] = useState(false);
+    const [isGridExpanded, setIsGridExpanded] = useState(false);
 
     useEffect(() => {
         const handleResize = () => {
@@ -84,24 +85,71 @@ function App() {
         };
     }, []);
 
+    useEffect(() => {
+        if (!isGridExpanded) {
+            return;
+        }
+
+        const previousHtmlOverflow = document.documentElement.style.overflow;
+        const previousBodyOverflow = document.body.style.overflow;
+
+        document.documentElement.style.overflow = "hidden";
+        document.body.style.overflow = "hidden";
+
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === "Escape") {
+                setIsGridExpanded(false);
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+
+        return () => {
+            document.documentElement.style.overflow = previousHtmlOverflow;
+            document.body.style.overflow = previousBodyOverflow;
+            window.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [isGridExpanded]);
+
     const toggleDesktopSidebar = () => {
         setSidebarView((prev) => (prev === "summary" ? "notes" : "summary"));
+    };
+
+    const toggleGridExpanded = () => {
+        setIsGridExpanded((current) => !current);
     };
 
     const plannerContent = (
         <>
             <TemplatesBar />
-            <GridToolbar
-                layout={layoutMode === "mobile" ? "mobile" : "desktop"}
-                onOpenSettings={
-                    layoutMode === "mobile"
-                        ? () => setMobileSettingsOpen(true)
-                        : undefined
-                }
-            />
-            <section className="app-scrollbar min-h-0 flex-1 overflow-auto">
-                <ScheduleGrid />
-            </section>
+            <div
+                className={cn(
+                    "min-h-0 flex-1",
+                    isGridExpanded &&
+                        "fixed inset-0 z-50 bg-background/85 p-2 backdrop-blur-sm md:p-4"
+                )}
+            >
+                <div
+                    className={cn(
+                        "flex min-h-0 flex-1 flex-col gap-4",
+                        isGridExpanded && "mx-auto h-full w-full max-w-540"
+                    )}
+                >
+                    <GridToolbar
+                        layout={layoutMode === "mobile" ? "mobile" : "desktop"}
+                        onOpenSettings={
+                            layoutMode === "mobile"
+                                ? () => setMobileSettingsOpen(true)
+                                : undefined
+                        }
+                        isExpanded={isGridExpanded}
+                        onToggleExpand={toggleGridExpanded}
+                    />
+                    <section className="min-h-0 flex-1">
+                        <ScheduleGrid />
+                    </section>
+                </div>
+            </div>
         </>
     );
 
@@ -125,11 +173,18 @@ function App() {
         >
             <div
                 className={cn(
-                    "mx-auto flex min-h-full max-w-405 gap-4 xl:gap-5",
+                    "mx-auto flex min-h-full max-w-540 gap-4 xl:gap-5",
                     layoutMode === "desktop" ? "h-full" : "flex-col"
                 )}
             >
-                <main className="flex min-w-0 flex-auto flex-col gap-4">
+                <main
+                    className={cn(
+                        "flex min-w-0 flex-col gap-4",
+                        layoutMode === "desktop"
+                            ? "w-full max-w-405 flex-1"
+                            : "flex-auto"
+                    )}
+                >
                     <Header
                         layoutMode={layoutMode}
                         sidebarView={sidebarView}
@@ -141,7 +196,7 @@ function App() {
 
                 {layoutMode === "desktop" ? (
                     <aside className="flex min-h-0 w-[clamp(320px,31vw,520px)] max-w-130 flex-none">
-                        <Sidebar view={sidebarView} />
+                        <Sidebar view={sidebarView} className="w-full" />
                     </aside>
                 ) : null}
             </div>

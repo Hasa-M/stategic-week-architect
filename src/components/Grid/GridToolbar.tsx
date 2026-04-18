@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { Expand, Minimize2, Plus } from "lucide-react";
 import { useMemo } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -31,6 +31,8 @@ type GridSettingsControlsProps = {
 type GridToolbarProps = {
     layout?: "desktop" | "mobile";
     onOpenSettings?: () => void;
+    isExpanded?: boolean;
+    onToggleExpand?: () => void;
 };
 
 function formatRangeLabel(startTime: number, endTime: number) {
@@ -108,6 +110,38 @@ function AddActivityAction({ className }: { className?: string }) {
                 Add Activity
             </Button>
         </PlaceActivityModal>
+    );
+}
+
+function ExpandGridAction({
+    isExpanded = false,
+    onToggleExpand,
+}: Pick<GridToolbarProps, "isExpanded" | "onToggleExpand">) {
+    if (!onToggleExpand) {
+        return null;
+    }
+
+    const label = isExpanded
+        ? "Exit full-page grid"
+        : "Expand grid to full page";
+
+    return (
+        <Button
+            type="button"
+            variant="outline"
+            size="icon-sm"
+            className="shrink-0"
+            onClick={onToggleExpand}
+            aria-label={label}
+            aria-pressed={isExpanded}
+            title={label}
+        >
+            {isExpanded ? (
+                <Minimize2 className="size-4" />
+            ) : (
+                <Expand className="size-4" />
+            )}
+        </Button>
     );
 }
 
@@ -189,7 +223,7 @@ export function GridSettingsControls({
             )}
         >
             <div className="app-panel-muted flex flex-1 flex-wrap items-center gap-2 p-3.5 xl:min-w-92">
-                <span className="mr-2 text-sm font-medium text-slate-500">
+                <span className="app-text-muted mr-2 text-sm font-medium">
                     Visible days
                 </span>
                 {ALL_DAYS.map((day) => {
@@ -211,10 +245,10 @@ export function GridSettingsControls({
             </div>
 
             <div className="app-panel-muted flex flex-1 flex-wrap items-center gap-3 p-3.5 xl:min-w-68">
-                <span className="shrink-0 text-sm font-medium text-slate-500">
+                <span className="app-text-muted shrink-0 text-sm font-medium">
                     Slot size
                 </span>
-                <div className="inline-flex min-w-0 rounded-full border border-primary/12 bg-white/82 p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.92),0_10px_24px_rgba(15,23,42,0.05)]">
+                <div className="app-segmented-control inline-flex min-w-0 rounded-full border p-1">
                     {SLOT_OPTIONS.map((option) => {
                         const isSelected = schedule.grid.slotDuration === option.value;
 
@@ -223,10 +257,9 @@ export function GridSettingsControls({
                                 key={option.value}
                                 type="button"
                                 className={cn(
-                                    "rounded-full px-3.5 py-2 text-sm font-medium transition-all",
-                                    isSelected
-                                        ? "bg-primary text-on-primary shadow-[0_10px_20px_rgba(8,145,178,0.22)]"
-                                        : "text-slate-500 hover:bg-sky-50/80 hover:text-slate-700"
+                                    "app-segmented-control__button rounded-full px-3.5 py-2 text-sm font-medium transition-all",
+                                    isSelected &&
+                                        "app-segmented-control__button--active"
                                 )}
                                 onClick={() => handleSlotDurationChange(option.value)}
                                 aria-pressed={isSelected}
@@ -240,7 +273,7 @@ export function GridSettingsControls({
             </div>
 
             <div className="app-panel-muted flex flex-1 flex-wrap items-center gap-3 p-3.5 xl:min-w-72">
-                <span className="shrink-0 text-sm font-medium text-slate-500">
+                <span className="app-text-muted shrink-0 text-sm font-medium">
                     Time range
                 </span>
                 <div className="flex min-w-0 flex-1 items-center gap-2">
@@ -252,7 +285,7 @@ export function GridSettingsControls({
                         options={startHourOptions}
                         className="min-w-24 flex-1"
                     />
-                    <span className="text-sm font-medium text-slate-400">to</span>
+                    <span className="app-text-subtle text-sm font-medium">to</span>
                     <Select
                         id="grid-end-time"
                         name="gridEndTime"
@@ -270,6 +303,8 @@ export function GridSettingsControls({
 function GridToolbarContent({
     layout,
     onOpenSettings,
+    isExpanded,
+    onToggleExpand,
     slotSizeLabel,
     timeRangeLabel,
 }: GridToolbarProps & { slotSizeLabel: string; timeRangeLabel: string }) {
@@ -280,10 +315,10 @@ function GridToolbarContent({
             <div className="flex flex-col gap-3 py-1">
                 <div className="app-panel-muted flex flex-col gap-3 p-3.5 sm:flex-row sm:items-center sm:justify-between">
                     <div className="min-w-0">
-                        <p className="text-sm font-semibold text-slate-700">
+                        <p className="app-text text-sm font-semibold">
                             Grid settings
                         </p>
-                        <p className="text-sm text-slate-500">
+                        <p className="app-text-muted text-sm">
                             {schedule.grid.days.length} visible day
                             {schedule.grid.days.length === 1 ? "" : "s"} · {slotSizeLabel} · {timeRangeLabel}
                         </p>
@@ -299,7 +334,13 @@ function GridToolbarContent({
                     </Button>
                 </div>
 
-                <AddActivityAction className="w-full justify-center" />
+                <div className="flex items-center gap-2">
+                    <AddActivityAction className="flex-1 justify-center" />
+                    <ExpandGridAction
+                        isExpanded={isExpanded}
+                        onToggleExpand={onToggleExpand}
+                    />
+                </div>
             </div>
         );
     }
@@ -307,7 +348,13 @@ function GridToolbarContent({
     return (
         <div className="flex flex-col gap-4 py-1 xl:flex-row xl:items-center">
             <GridSettingsControls className="flex-1" />
-            <AddActivityAction />
+            <div className="flex flex-wrap items-center justify-end gap-2">
+                <AddActivityAction />
+                <ExpandGridAction
+                    isExpanded={isExpanded}
+                    onToggleExpand={onToggleExpand}
+                />
+            </div>
         </div>
     );
 }
@@ -315,6 +362,8 @@ function GridToolbarContent({
 export default function GridToolbar({
     layout = "desktop",
     onOpenSettings,
+    isExpanded = false,
+    onToggleExpand,
 }: GridToolbarProps) {
     const schedule = useScheduleContext();
 
@@ -330,6 +379,8 @@ export default function GridToolbar({
         <GridToolbarContent
             layout={layout}
             onOpenSettings={onOpenSettings}
+            isExpanded={isExpanded}
+            onToggleExpand={onToggleExpand}
             slotSizeLabel={slotSizeLabel}
             timeRangeLabel={timeRangeLabel}
         />

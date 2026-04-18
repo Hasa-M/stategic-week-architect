@@ -24,7 +24,7 @@ import type {
 } from "@/types";
 
 const SLOT_HEIGHT = 56;
-const TIME_COLUMN_WIDTH = 84;
+const TIME_COLUMN_WIDTH = 64;
 const DRAG_THRESHOLD = 6;
 const ACTIVITY_SIDE_INSET = 8;
 const OVERLAP_STAGGER = 18;
@@ -213,8 +213,10 @@ export default function ScheduleGrid() {
     const { days, slotDuration, startTime, endTime } = schedule.grid;
     const dayColumnRefs = useRef<Partial<Record<Day, HTMLDivElement | null>>>({});
     const dragStateRef = useRef<DragState | null>(null);
+    const dragElementRef = useRef<HTMLButtonElement | null>(null);
     const [dragState, setDragState] = useState<DragState | null>(null);
     const [selectedPlacedId, setSelectedPlacedId] = useState<string | null>(null);
+    const isDragging = dragState !== null;
 
     const slotTimes = useMemo(() => {
         const totalSlots = Math.ceil((endTime - startTime) / slotDuration);
@@ -334,6 +336,21 @@ export default function ScheduleGrid() {
         dragStateRef.current = dragState;
     }, [dragState]);
 
+    const clearDragState = useCallback((pointerId?: number) => {
+        const activePointerId = pointerId ?? dragStateRef.current?.pointerId;
+
+        if (
+            activePointerId !== undefined &&
+            dragElementRef.current?.hasPointerCapture(activePointerId)
+        ) {
+            dragElementRef.current.releasePointerCapture(activePointerId);
+        }
+
+        dragElementRef.current = null;
+        dragStateRef.current = null;
+        setDragState(null);
+    }, []);
+
     const handleSavePlacedActivity = useCallback(
         (data: SavePlacedActivityPayload) => {
             dispatch({ type: "SAVE_PLACED_ACTIVITY", payload: data });
@@ -355,7 +372,7 @@ export default function ScheduleGrid() {
             event: ReactPointerEvent<HTMLButtonElement>,
             activity: PlacedActivity
         ) => {
-            if (event.button !== 0) {
+            if (event.pointerType === "mouse" && event.button !== 0) {
                 return;
             }
 
@@ -373,6 +390,8 @@ export default function ScheduleGrid() {
                 didDrag: false,
             };
 
+            event.currentTarget.setPointerCapture(event.pointerId);
+            dragElementRef.current = event.currentTarget;
             dragStateRef.current = nextDragState;
             setDragState(nextDragState);
         },
@@ -390,7 +409,7 @@ export default function ScheduleGrid() {
     );
 
     useEffect(() => {
-        if (!dragState) {
+        if (!isDragging) {
             return;
         }
 
@@ -463,8 +482,7 @@ export default function ScheduleGrid() {
                 setSelectedPlacedId(currentDragState.placedId);
             }
 
-            dragStateRef.current = null;
-            setDragState(null);
+            clearDragState(currentDragState.pointerId);
         };
 
         const handlePointerCancel = (event: PointerEvent) => {
@@ -474,8 +492,7 @@ export default function ScheduleGrid() {
                 return;
             }
 
-            dragStateRef.current = null;
-            setDragState(null);
+            clearDragState(currentDragState.pointerId);
         };
 
         window.addEventListener("pointermove", handlePointerMove);
@@ -488,215 +505,225 @@ export default function ScheduleGrid() {
             window.removeEventListener("pointerup", handlePointerEnd);
             window.removeEventListener("pointercancel", handlePointerCancel);
         };
-    }, [days, dispatch, dragState, endTime, slotDuration, startTime]);
+    }, [
+        clearDragState,
+        days,
+        dispatch,
+        endTime,
+        isDragging,
+        slotDuration,
+        startTime,
+    ]);
 
     const columnHeight = slotTimes.length * SLOT_HEIGHT;
 
     return (
         <>
-            <div className="app-panel app-scrollbar overflow-x-auto">
-                <div
-                    className="grid min-w-190"
-                    style={{
-                        gridTemplateColumns: `${TIME_COLUMN_WIDTH}px repeat(${days.length}, minmax(0, 1fr))`,
-                    }}
-                >
-                    <div className="border-b border-r border-primary/8 bg-white/55 p-3 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        Time
-                    </div>
-                    {days.map((day) => (
-                        <div
-                            key={day}
-                            className="border-b border-primary/8 bg-white/55 p-3 text-sm font-semibold text-slate-700"
-                        >
-                            {day}
+            <div className="app-panel flex h-full min-h-0 flex-col overflow-hidden">
+                <div className="app-scrollbar min-h-0 flex-1 overflow-auto">
+                    <div
+                        className="grid min-w-190"
+                        style={{
+                            gridTemplateColumns: `${TIME_COLUMN_WIDTH}px repeat(${days.length}, minmax(0, 1fr))`,
+                        }}
+                    >
+                        <div className="app-grid-header-cell app-grid-slot-border app-text-muted border-b border-r border-primary/8 px-2 py-3 text-[11px] font-semibold uppercase tracking-wide">
+                            Time
                         </div>
-                    ))}
-
-                    <div className="border-r border-primary/8 bg-white/40">
-                        {slotTimes.map((slot) => (
-                            <div
-                                key={slot.minutes}
-                                className="border-b border-primary/8 px-3 py-2 text-xs text-slate-500"
-                                style={{ height: SLOT_HEIGHT }}
-                            >
-                                {slot.label}
-                            </div>
-                        ))}
-                    </div>
-
-                    {days.map((day) => {
-                        const dayActivities = renderedActivities.filter(
-                            (activity) => activity.day === day
-                        );
-
-                        return (
+                        {days.map((day) => (
                             <div
                                 key={day}
-                                ref={(element) => {
-                                    dayColumnRefs.current[day] = element;
-                                }}
-                                className={`relative border-l border-primary/8 transition-colors ${
-                                    dragState?.didDrag && dragState.previewDay === day
-                                        ? "bg-primary/5"
-                                        : "bg-white/18"
-                                }`}
-                                style={{ height: columnHeight }}
+                                className="app-grid-header-cell app-grid-slot-border app-text border-b border-primary/8 px-3 py-3 text-sm font-semibold"
                             >
-                                {slotTimes.map((slot) => (
-                                    <div
-                                        key={`${day}-${slot.minutes}`}
-                                        className="border-b border-primary/8"
-                                        style={{ height: SLOT_HEIGHT }}
-                                    />
-                                ))}
-
-                                {dayActivities.map((activity) => {
-                                    const activityNotes =
-                                        notesByActivity[activity.placedId] ?? [];
-                                    const overlapLayout = overlapLayouts[
-                                        activity.placedId
-                                    ] ?? {
-                                        laneIndex: 0,
-                                        laneCount: 1,
-                                        isOverlapping: false,
-                                    };
-                                    const isRangeClipped =
-                                        activity.visibleStartTime !== activity.startTime ||
-                                        activity.visibleEndTime !== activity.endTime;
-                                    const top =
-                                        ((activity.visibleStartTime - startTime) /
-                                            slotDuration) *
-                                        SLOT_HEIGHT;
-                                    const rawHeight = Math.max(
-                                        ((activity.visibleEndTime -
-                                            activity.visibleStartTime) /
-                                            slotDuration) *
-                                            SLOT_HEIGHT -
-                                            6,
-                                        10
-                                    );
-                                    const height = isRangeClipped
-                                        ? rawHeight
-                                        : Math.max(rawHeight, SLOT_HEIGHT * 0.85);
-                                    const colorStyles = getColorStyles(
-                                        activity.color
-                                    );
-                                    const maxVisibleNotes = Math.max(
-                                        0,
-                                        Math.floor((height - 56) / 32)
-                                    );
-                                    const visibleNotes = activityNotes.slice(
-                                        0,
-                                        maxVisibleNotes
-                                    );
-                                    const hiddenNotesCount = Math.max(
-                                        0,
-                                        activityNotes.length - visibleNotes.length
-                                    );
-                                    const isDraggedActivity =
-                                        dragState?.didDrag &&
-                                        dragState.placedId === activity.placedId;
-                                    const leftInset =
-                                        ACTIVITY_SIDE_INSET +
-                                        overlapLayout.laneIndex * OVERLAP_STAGGER;
-                                    const rightInset =
-                                        ACTIVITY_SIDE_INSET +
-                                        (overlapLayout.laneCount -
-                                            overlapLayout.laneIndex -
-                                            1) *
-                                            OVERLAP_STAGGER;
-
-                                    return (
-                                        <button
-                                            key={activity.placedId}
-                                            type="button"
-                                            className={`${colorStyles.soft} ${colorStyles.border} absolute overflow-hidden rounded-xl border px-3 py-2 text-left shadow-sm transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 ${
-                                                isDraggedActivity
-                                                    ? "z-30 cursor-grabbing shadow-lg ring-1 ring-primary/20"
-                                                    : overlapLayout.isOverlapping
-                                                      ? "z-10 cursor-grab opacity-80 ring-1 ring-white/50 backdrop-blur-[1px] hover:z-30 hover:-translate-y-0.5 hover:opacity-100 hover:shadow-lg hover:saturate-150 hover:brightness-105 hover:ring-2 hover:ring-primary/25 active:cursor-grabbing"
-                                                      : "cursor-grab hover:z-20 hover:-translate-y-0.5 hover:shadow-md hover:ring-1 hover:ring-primary/15 active:cursor-grabbing"
-                                            }`}
-                                            style={{
-                                                top: top + 3,
-                                                height,
-                                                left: leftInset,
-                                                right: rightInset,
-                                                zIndex: isDraggedActivity
-                                                    ? 30
-                                                    : overlapLayout.isOverlapping
-                                                      ? 10 + overlapLayout.laneIndex
-                                                      : 1,
-                                            }}
-                                            onPointerDown={(event) =>
-                                                handleActivityPointerDown(
-                                                    event,
-                                                    activity
-                                                )
-                                            }
-                                            onKeyDown={(event) =>
-                                                handleActivityKeyDown(
-                                                    event,
-                                                    activity.placedId
-                                                )
-                                            }
-                                            aria-label={`Edit ${activity.title}`}
-                                        >
-                                            <div
-                                                className={`text-sm font-semibold ${colorStyles.text}`}
-                                            >
-                                                {activity.title}
-                                            </div>
-                                            <p className="mt-1 text-xs text-gray-500">
-                                                {formatMinutes(activity.startTime)} -{" "}
-                                                {formatMinutes(activity.endTime)}
-                                            </p>
-                                            {overlapLayout.isOverlapping && (
-                                                <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">
-                                                    Overlap {overlapLayout.laneIndex + 1}/{overlapLayout.laneCount}
-                                                </p>
-                                            )}
-                                            {(visibleNotes.length > 0 ||
-                                                hiddenNotesCount > 0) && (
-                                                <ul className="mt-3 space-y-2">
-                                                    {visibleNotes.map((note) => {
-                                                        const noteStyles =
-                                                            getColorStyles(note.color);
-
-                                                        return (
-                                                            <li
-                                                                key={note.id}
-                                                                className="flex items-start gap-2 text-xs text-gray-600"
-                                                            >
-                                                                <span
-                                                                    className={`${noteStyles.solid} mt-1 h-2 w-2 shrink-0 rounded-full`}
-                                                                />
-                                                                <span className="min-w-0 truncate font-medium">
-                                                                    {note.title}
-                                                                </span>
-                                                            </li>
-                                                        );
-                                                    })}
-                                                    {hiddenNotesCount > 0 && (
-                                                        <li className="text-[11px] font-medium uppercase tracking-wide text-gray-400">
-                                                            +{hiddenNotesCount} more
-                                                        </li>
-                                                    )}
-                                                </ul>
-                                            )}
-                                        </button>
-                                    );
-                                })}
-
-                                {dayActivities.length === 0 && (
-                                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-xs text-gray-300">
-                                        No activities
-                                    </div>
-                                )}
+                                {day}
                             </div>
-                        );
-                    })}
+                        ))}
+
+                        <div className="app-grid-time-column app-grid-slot-border border-r border-primary/8">
+                            {slotTimes.map((slot) => (
+                                <div
+                                    key={slot.minutes}
+                                    className="app-grid-slot-border app-text-muted border-b px-2 py-2 text-[11px]"
+                                    style={{ height: SLOT_HEIGHT }}
+                                >
+                                    {slot.label}
+                                </div>
+                            ))}
+                        </div>
+
+                        {days.map((day) => {
+                            const dayActivities = renderedActivities.filter(
+                                (activity) => activity.day === day
+                            );
+
+                            return (
+                                <div
+                                    key={day}
+                                    ref={(element) => {
+                                        dayColumnRefs.current[day] = element;
+                                    }}
+                                    className={`app-grid-day-column app-grid-slot-border relative border-l border-primary/8 transition-colors ${
+                                        dragState?.didDrag && dragState.previewDay === day
+                                            ? "app-grid-day-column--preview"
+                                            : ""
+                                    }`}
+                                    style={{ height: columnHeight }}
+                                >
+                                    {slotTimes.map((slot) => (
+                                        <div
+                                            key={`${day}-${slot.minutes}`}
+                                            className="app-grid-slot-border border-b"
+                                            style={{ height: SLOT_HEIGHT }}
+                                        />
+                                    ))}
+
+                                    {dayActivities.map((activity) => {
+                                        const activityNotes =
+                                            notesByActivity[activity.placedId] ?? [];
+                                        const overlapLayout = overlapLayouts[
+                                            activity.placedId
+                                        ] ?? {
+                                            laneIndex: 0,
+                                            laneCount: 1,
+                                            isOverlapping: false,
+                                        };
+                                        const isRangeClipped =
+                                            activity.visibleStartTime !== activity.startTime ||
+                                            activity.visibleEndTime !== activity.endTime;
+                                        const top =
+                                            ((activity.visibleStartTime - startTime) /
+                                                slotDuration) *
+                                            SLOT_HEIGHT;
+                                        const rawHeight = Math.max(
+                                            ((activity.visibleEndTime -
+                                                activity.visibleStartTime) /
+                                                slotDuration) *
+                                                SLOT_HEIGHT -
+                                                6,
+                                            10
+                                        );
+                                        const height = isRangeClipped
+                                            ? rawHeight
+                                            : Math.max(rawHeight, SLOT_HEIGHT * 0.85);
+                                        const colorStyles = getColorStyles(
+                                            activity.color
+                                        );
+                                        const maxVisibleNotes = Math.max(
+                                            0,
+                                            Math.floor((height - 56) / 32)
+                                        );
+                                        const visibleNotes = activityNotes.slice(
+                                            0,
+                                            maxVisibleNotes
+                                        );
+                                        const hiddenNotesCount = Math.max(
+                                            0,
+                                            activityNotes.length - visibleNotes.length
+                                        );
+                                        const isDraggedActivity =
+                                            dragState?.didDrag &&
+                                            dragState.placedId === activity.placedId;
+                                        const leftInset =
+                                            ACTIVITY_SIDE_INSET +
+                                            overlapLayout.laneIndex * OVERLAP_STAGGER;
+                                        const rightInset =
+                                            ACTIVITY_SIDE_INSET +
+                                            (overlapLayout.laneCount -
+                                                overlapLayout.laneIndex -
+                                                1) *
+                                                OVERLAP_STAGGER;
+
+                                        return (
+                                            <button
+                                                key={activity.placedId}
+                                                type="button"
+                                                className={`${colorStyles.soft} ${colorStyles.border} absolute touch-none select-none overflow-hidden rounded-xl border px-3 py-2 text-left shadow-sm transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 ${
+                                                    isDraggedActivity
+                                                        ? "z-30 cursor-grabbing shadow-lg ring-1 ring-primary/20"
+                                                        : overlapLayout.isOverlapping
+                                                          ? "z-10 cursor-grab opacity-80 ring-1 ring-white/50 backdrop-blur-[1px] hover:z-30 hover:-translate-y-0.5 hover:opacity-100 hover:shadow-lg hover:saturate-150 hover:brightness-105 hover:ring-2 hover:ring-primary/25 active:cursor-grabbing"
+                                                          : "cursor-grab hover:z-20 hover:-translate-y-0.5 hover:shadow-md hover:ring-1 hover:ring-primary/15 active:cursor-grabbing"
+                                                }`}
+                                                style={{
+                                                    top: top + 3,
+                                                    height,
+                                                    left: leftInset,
+                                                    right: rightInset,
+                                                    zIndex: isDraggedActivity
+                                                        ? 30
+                                                        : overlapLayout.isOverlapping
+                                                          ? 10 + overlapLayout.laneIndex
+                                                          : 1,
+                                                }}
+                                                onPointerDown={(event) =>
+                                                    handleActivityPointerDown(
+                                                        event,
+                                                        activity
+                                                    )
+                                                }
+                                                onKeyDown={(event) =>
+                                                    handleActivityKeyDown(
+                                                        event,
+                                                        activity.placedId
+                                                    )
+                                                }
+                                                aria-label={`Edit ${activity.title}`}
+                                            >
+                                                <div
+                                                    className={`text-sm font-semibold ${colorStyles.text}`}
+                                                >
+                                                    {activity.title}
+                                                </div>
+                                                <p className="app-text-muted mt-1 text-xs">
+                                                    {formatMinutes(activity.startTime)} -{" "}
+                                                    {formatMinutes(activity.endTime)}
+                                                </p>
+                                                {overlapLayout.isOverlapping && (
+                                                    <p className="app-text-subtle mt-2 text-[10px] font-semibold uppercase tracking-[0.18em]">
+                                                        Overlap {overlapLayout.laneIndex + 1}/{overlapLayout.laneCount}
+                                                    </p>
+                                                )}
+                                                {(visibleNotes.length > 0 ||
+                                                    hiddenNotesCount > 0) && (
+                                                    <ul className="mt-3 space-y-2">
+                                                        {visibleNotes.map((note) => {
+                                                            const noteStyles =
+                                                                getColorStyles(note.color);
+
+                                                            return (
+                                                                <li
+                                                                    key={note.id}
+                                                                    className="app-text-soft flex items-start gap-2 text-xs"
+                                                                >
+                                                                    <span
+                                                                        className={`${noteStyles.solid} mt-1 h-2 w-2 shrink-0 rounded-full`}
+                                                                    />
+                                                                    <span className="min-w-0 truncate font-medium">
+                                                                        {note.title}
+                                                                    </span>
+                                                                </li>
+                                                            );
+                                                        })}
+                                                        {hiddenNotesCount > 0 && (
+                                                            <li className="app-text-subtle text-[11px] font-medium uppercase tracking-wide">
+                                                                +{hiddenNotesCount} more
+                                                            </li>
+                                                        )}
+                                                    </ul>
+                                                )}
+                                            </button>
+                                        );
+                                    })}
+
+                                    {dayActivities.length === 0 && (
+                                        <div className="app-text-subtle pointer-events-none absolute inset-0 flex items-center justify-center text-xs">
+                                            No activities
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
             </div>
 

@@ -52,12 +52,12 @@ export default function SummaryDashboard() {
 
     return (
         <div className="app-scrollbar flex h-full min-h-0 flex-col gap-4 overflow-y-auto pr-1">
-            <div className="app-panel-muted p-5 text-slate-700">
+            <div className="app-panel-muted app-text p-5">
                 <p className="app-badge w-fit">Weekly Overview</p>
-                <p className="mt-4 text-2xl font-bold tracking-tight text-slate-800">
+                <p className="app-text-strong mt-4 text-2xl font-bold tracking-tight">
                     {schedule.name}
                 </p>
-                <p className="mt-3 text-sm text-slate-500">
+                <p className="app-text-muted mt-3 text-sm">
                     {visibleActivities.length} visible activit{visibleActivities.length === 1 ? "y" : "ies"} across {visibleDays.length}{" "}
                     visible day{visibleDays.length === 1 ? "" : "s"}
                 </p>
@@ -65,44 +65,44 @@ export default function SummaryDashboard() {
 
             <div className="grid gap-3 sm:grid-cols-2">
                 <div className="app-card p-4">
-                    <div className="flex items-center gap-2 text-sm text-slate-500">
+                    <div className="app-text-muted flex items-center gap-2 text-sm">
                         <Clock3 className="size-4" />
                         Planned hours
                     </div>
-                    <p className="mt-2 text-2xl font-semibold text-slate-800">
+                    <p className="app-text-strong mt-2 text-2xl font-semibold">
                         {totalPlannedHours.toFixed(1)}h
                     </p>
                 </div>
 
                 <div className="app-card p-4">
-                    <div className="flex items-center gap-2 text-sm text-slate-500">
+                    <div className="app-text-muted flex items-center gap-2 text-sm">
                         <LayoutGrid className="size-4" />
                         Templates
                     </div>
-                    <p className="mt-2 text-2xl font-semibold text-slate-800">
+                    <p className="app-text-strong mt-2 text-2xl font-semibold">
                         {Object.keys(schedule.templates).length}
                     </p>
                 </div>
 
                 <div className="app-card p-4">
-                    <div className="flex items-center gap-2 text-sm text-slate-500">
+                    <div className="app-text-muted flex items-center gap-2 text-sm">
                         <CalendarDays className="size-4" />
                         Busiest day
                     </div>
-                    <p className="mt-2 text-lg font-semibold text-slate-800">
+                    <p className="app-text-strong mt-2 text-lg font-semibold">
                         {busiestDay.day}
                     </p>
-                    <p className="text-sm text-slate-500">
+                    <p className="app-text-muted text-sm">
                         {busiestDay.hours.toFixed(1)} scheduled hours
                     </p>
                 </div>
 
                 <div className="app-card p-4">
-                    <div className="flex items-center gap-2 text-sm text-slate-500">
+                    <div className="app-text-muted flex items-center gap-2 text-sm">
                         <StickyNote className="size-4" />
                         Notes
                     </div>
-                    <p className="mt-2 text-2xl font-semibold text-slate-800">
+                    <p className="app-text-strong mt-2 text-2xl font-semibold">
                         {Object.keys(schedule.notes).length}
                     </p>
                 </div>
@@ -110,8 +110,8 @@ export default function SummaryDashboard() {
 
             <div className="app-card p-4">
                 <div className="mb-3 flex items-center justify-between">
-                    <h3 className="font-semibold text-slate-800">Visible week breakdown</h3>
-                    <span className="text-sm text-slate-500">
+                    <h3 className="app-text-strong font-semibold">Visible week breakdown</h3>
+                    <span className="app-text-muted text-sm">
                         {visibleDays.length} day{visibleDays.length === 1 ? "" : "s"}
                     </span>
                 </div>
@@ -119,7 +119,7 @@ export default function SummaryDashboard() {
                     {hoursByDay.map(({ day, hours }) => (
                         <li key={day} className="flex items-center justify-between text-sm">
                             <span>{day}</span>
-                            <span className="font-medium text-slate-600">
+                            <span className="app-text-soft font-medium">
                                 {hours.toFixed(1)}h
                             </span>
                         </li>
@@ -128,15 +128,15 @@ export default function SummaryDashboard() {
             </div>
 
             <div className="app-card p-4">
-                <h3 className="mb-3 font-semibold text-slate-800">Recent templates</h3>
+                <h3 className="app-text-strong mb-3 font-semibold">Recent templates</h3>
                 {recentTemplates.length === 0 ? (
-                    <p className="text-sm text-slate-500">
+                    <p className="app-text-muted text-sm">
                         Create a template to start planning your week.
                     </p>
                 ) : (
                     <ul className="space-y-2">
                         {recentTemplates.map((template) => (
-                            <li key={template.templateId} className="text-sm text-slate-600">
+                            <li key={template.templateId} className="app-text-soft text-sm">
                                 {template.title}
                             </li>
                         ))}

@@ -7,6 +7,8 @@ A weekly schedule planning application designed to help users organize activitie
 - **Activity Templates** — Create reusable templates with title, description, color coding, and subfactors
 - **Weekly Schedule Grid** — Visual calendar interface that renders placed activities across visible days
 - **Grid Controls** — Filter visible days, choose a visible time range, switch slot size between 30 min and 1 hour, and place activities directly from the toolbar
+- **Direct Rescheduling** — Drag placed activities around the grid on desktop and touch devices
+- **Grid Focus Mode** — Expand the planner grid to full page when you need more room
 - **Color-Coded Activities** — 11 color options for visual organization
 - **Notes System** — Sidebar for notes linked to placed activities
 - **Schedule Summary** — Sidebar metrics for planned hours, busiest day, templates, and notes
@@ -121,7 +123,8 @@ npm run dev
 
 ### Frontend
 - [x] Schedule grid visualization (main calendar view)
-- [ ] Drag-and-drop activity placement
+- [x] Drag-and-drop rescheduling for placed activities
+- [ ] Drag templates directly from the template bar into the grid
 - [x] Grid toolbar (days filter, time slots, add activity)
 - [x] Notes sidebar implementation
 - [x] Template card edit/delete dialogs

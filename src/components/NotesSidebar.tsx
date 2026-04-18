@@ -138,7 +138,7 @@ export default function NotesSidebar() {
             <div className="mb-4 flex items-center justify-between gap-3">
                 <div>
                     <span className="app-badge mb-2 w-fit">Notes</span>
-                    <h2 className="text-lg font-semibold text-slate-800">
+                    <h2 className="app-text-strong text-lg font-semibold">
                         All Activity Notes
                     </h2>
                 </div>
@@ -166,7 +166,7 @@ export default function NotesSidebar() {
             </div>
 
             {noteList.length === 0 ? (
-                <div className="app-card flex items-center justify-center px-4 py-10 text-center text-sm text-slate-500">
+                <div className="app-card app-text-muted flex items-center justify-center px-4 py-10 text-center text-sm">
                     {canAddNotes
                         ? "No notes yet. Click + to add one."
                         : "Place an activity on the grid before adding notes."}

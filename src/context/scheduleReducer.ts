@@ -5,6 +5,7 @@ import {
     normalizeGridSettings,
 } from "@/lib/grid";
 import {
+    DEFAULT_THEME_MODE,
     type Activity,
     type ActivityNoteDraft,
     type ActivityNoteInput,
@@ -17,6 +18,7 @@ import {
 export const initialState: ScheduleState = {
     id: crypto.randomUUID(),
     name: "My Weekly Schedule",
+    theme: DEFAULT_THEME_MODE,
     templates: {},
     placedActivities: {},
     grid: {
@@ -44,6 +46,7 @@ export function scheduleReducer(
         case "LOAD_STATE":
             return {
                 ...action.payload,
+                theme: action.payload.theme ?? DEFAULT_THEME_MODE,
                 grid: normalizeGridSettings(action.payload.grid),
             };
 
@@ -51,6 +54,12 @@ export function scheduleReducer(
             return {
                 ...state,
                 name: action.payload,
+            };
+
+        case "SET_THEME":
+            return {
+                ...state,
+                theme: action.payload,
             };
 
         case "ADD_TEMPLATE": {

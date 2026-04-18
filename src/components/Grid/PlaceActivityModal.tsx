@@ -396,18 +396,18 @@ function PlacedActivityDialogContent(props: PlacedActivityDialogProps) {
                         onClick={() => setNotesOpen((currentValue) => !currentValue)}
                     >
                         <div className="space-y-1">
-                            <p className="text-base font-semibold text-slate-700">
+                            <p className="app-text text-base font-semibold">
                                 Associated notes
                             </p>
-                            <p className="text-sm text-gray-500">
+                            <p className="app-text-muted text-sm">
                                 {mode === "edit"
                                     ? "Edit the notes linked to this activity."
                                     : "Optional context, reminders, or extra info for this activity."}
                             </p>
                         </div>
 
-                        <div className="flex items-center gap-3 text-sm text-gray-500">
-                            <span className="rounded-full border border-white/80 bg-white/75 px-3 py-1 font-medium text-slate-500 shadow-sm shadow-slate-200/60">
+                        <div className="app-text-muted flex items-center gap-3 text-sm">
+                            <span className="app-text-muted rounded-full border border-white/80 bg-white/75 px-3 py-1 font-medium shadow-sm shadow-slate-200/60">
                                 {notes.length} note{notes.length === 1 ? "" : "s"}
                             </span>
                             <ChevronDown
@@ -421,7 +421,7 @@ function PlacedActivityDialogContent(props: PlacedActivityDialogProps) {
                     {notesOpen && (
                         <div className="space-y-4 border-t border-primary/8 bg-white/35 px-5 py-5 backdrop-blur-[2px]">
                             {notes.length === 0 ? (
-                                <div className="rounded-2xl border border-dashed border-primary/15 bg-white/65 px-4 py-5 text-sm text-gray-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+                                <div className="app-text-muted rounded-2xl border border-dashed border-primary/15 bg-white/65 px-4 py-5 text-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
                                     No notes added yet. Use the button below to attach one.
                                 </div>
                             ) : (
@@ -436,7 +436,7 @@ function PlacedActivityDialogContent(props: PlacedActivityDialogProps) {
                                                     <span className="inline-flex rounded-full bg-sky-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700">
                                                         Note {index + 1}
                                                     </span>
-                                                    <p className="text-sm text-gray-500">
+                                                    <p className="app-text-muted text-sm">
                                                         Attached note for this activity.
                                                     </p>
                                                 </div>
@@ -445,7 +445,7 @@ function PlacedActivityDialogContent(props: PlacedActivityDialogProps) {
                                                     type="button"
                                                     variant="outline"
                                                     size="icon-sm"
-                                                    className="rounded-full border-primary/15 bg-white/80 text-slate-400 shadow-none hover:border-destructive/30 hover:bg-red-50 hover:text-destructive"
+                                                    className="app-text-subtle rounded-full border-primary/15 bg-white/80 shadow-none hover:border-destructive/30 hover:bg-red-50 hover:text-destructive"
                                                     onClick={() =>
                                                         handleRemoveNote(note.localId)
                                                     }
@@ -526,7 +526,7 @@ function PlacedActivityDialogContent(props: PlacedActivityDialogProps) {
                             <Button
                                 type="button"
                                 variant="outline"
-                                className="rounded-full border-primary/15 bg-white/80 text-slate-600 shadow-sm shadow-slate-200/60 hover:border-primary/25 hover:bg-white"
+                                className="app-text-soft rounded-full border-primary/15 bg-white/80 shadow-sm shadow-slate-200/60 hover:border-primary/25 hover:bg-white"
                                 onClick={handleAddNote}
                             >
                                 <Plus size={16} />

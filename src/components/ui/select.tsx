@@ -88,9 +88,9 @@ function Select({
                     id={id}
                     data-slot="select-trigger"
                     className={cn(
-                        "flex h-10 w-full items-center justify-between gap-2 rounded-2xl border border-primary/15 bg-white/86 px-3.5 py-2 text-sm text-slate-700 whitespace-nowrap shadow-[inset_0_1px_0_rgba(255,255,255,0.96),0_10px_26px_rgba(15,23,42,0.05)] backdrop-blur-sm outline-none",
-                        "data-placeholder:text-slate-400",
-                        "focus:border-primary/35 focus:bg-white focus:ring-4 focus:ring-primary/12",
+                        "app-input-surface flex h-10 w-full items-center justify-between gap-2 rounded-2xl border px-3.5 py-2 text-sm whitespace-nowrap backdrop-blur-sm outline-none",
+                        "data-placeholder:text-[color:var(--app-text-subtle)]",
+                        "focus:ring-4 focus:ring-[color:var(--app-focus-ring)]",
                         "disabled:cursor-not-allowed disabled:opacity-50",
                         "[&>span]:line-clamp-1",
                         className
@@ -118,14 +118,14 @@ function Select({
                         data-slot="select-content"
                         position="popper"
                         className={cn(
-                            "relative z-50 max-h-72 min-w-36 overflow-hidden rounded-3xl border border-white/80 bg-linear-to-b from-white/95 via-white/90 to-sky-50/75 shadow-[0_22px_60px_rgba(15,23,42,0.16)] backdrop-blur-xl",
+                            "app-popover-surface relative z-50 max-h-72 min-w-36 overflow-hidden rounded-3xl border backdrop-blur-xl",
                             "data-[state=open]:animate-in data-[state=closed]:animate-out",
                             "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
                             "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
                             "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1"
                         )}
                     >
-                        <SelectPrimitive.ScrollUpButton className="flex cursor-default items-center justify-center bg-transparent py-1 text-slate-400">
+                        <SelectPrimitive.ScrollUpButton className="flex cursor-default items-center justify-center bg-transparent py-1 text-[color:var(--app-text-subtle)]">
                             <ChevronUpIcon className="size-4" />
                         </SelectPrimitive.ScrollUpButton>
                         <SelectPrimitive.Viewport className="app-scrollbar max-h-60 w-full min-w-(--radix-select-trigger-width) overflow-y-auto p-1.5">
@@ -135,11 +135,11 @@ function Select({
                                     value={option.value}
                                     disabled={option.disabled}
                                     className={cn(
-                                        "relative flex w-full cursor-pointer select-none items-center rounded-2xl py-2 pl-3 pr-8 text-sm text-slate-600 outline-none transition-colors",
+                                        "relative flex w-full cursor-pointer select-none items-center rounded-2xl py-2 pl-3 pr-8 text-sm text-[color:var(--app-text-soft)] outline-none transition-colors",
                                         "bg-transparent",
-                                        "hover:bg-sky-50/85",
-                                        "focus:bg-sky-50/85",
-                                        "data-[state=checked]:bg-sky-100/90 data-[state=checked]:text-primary data-[state=checked]:font-medium",
+                                        "hover:bg-[color:var(--app-segmented-button-hover-bg)]",
+                                        "focus:bg-[color:var(--app-segmented-button-hover-bg)]",
+                                        "data-[state=checked]:bg-[color:var(--app-background-accent)] data-[state=checked]:text-primary data-[state=checked]:font-medium",
                                         "data-disabled:pointer-events-none data-disabled:opacity-50"
                                     )}
                                 >
@@ -161,7 +161,7 @@ function Select({
                                 </SelectPrimitive.Item>
                             ))}
                         </SelectPrimitive.Viewport>
-                        <SelectPrimitive.ScrollDownButton className="flex cursor-default items-center justify-center bg-transparent py-1 text-slate-400">
+                        <SelectPrimitive.ScrollDownButton className="flex cursor-default items-center justify-center bg-transparent py-1 text-[color:var(--app-text-subtle)]">
                             <ChevronDownIcon className="size-4" />
                         </SelectPrimitive.ScrollDownButton>
                     </SelectPrimitive.Content>

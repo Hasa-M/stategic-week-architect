@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { useRef, useState } from "react";
 import { useDispatch, useScheduleContext } from "@/context/hooks";
 import type { SidebarView } from "./Sidebar/Sidebar";
+import ThemeSwitcher from "@/components/ThemeSwitcher";
 
 type HeaderProps = {
     layoutMode: "desktop" | "tablet" | "mobile";
@@ -75,8 +76,7 @@ export default function Header({
     let title = (
         <>
             <div className="min-w-0">
-                <span className="app-badge mb-3 w-fit">Weekly Schedule</span>
-                <p className="max-w-[18ch] text-[26px]/8 font-bold tracking-tight text-slate-800 md:max-w-none md:text-[32px]/10">
+                <p className="app-text-strong max-w-[18ch] text-[26px]/8 font-bold tracking-tight md:max-w-none md:text-[32px]/10">
                     {schedule?.name ?? "Welcome to Your Weekly Schedule!"}
                 </p>
             </div>
@@ -128,17 +128,20 @@ export default function Header({
             <span className="group flex min-w-0 flex-1 items-start gap-3">
                 {title}
             </span>
-            {action && ActionIcon ? (
-                <Button
-                    variant="ghost"
-                    size={action.size}
-                    className={action.className}
-                    onClick={action.onClick}
-                >
-                    {action.label}
-                    <ActionIcon />
-                </Button>
-            ) : null}
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end md:flex-none">
+                <ThemeSwitcher className="self-start sm:self-auto" />
+                {action && ActionIcon ? (
+                    <Button
+                        variant="ghost"
+                        size={action.size}
+                        className={action.className}
+                        onClick={action.onClick}
+                    >
+                        {action.label}
+                        <ActionIcon />
+                    </Button>
+                ) : null}
+            </div>
         </header>
     );
 }

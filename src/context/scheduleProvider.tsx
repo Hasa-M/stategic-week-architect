@@ -27,6 +27,17 @@ export default function ScheduleProvider({
         storageService.saveState(scheduleState);
     }, [scheduleState]);
 
+    useEffect(() => {
+        if (typeof document === "undefined") {
+            return;
+        }
+
+        const root = document.documentElement;
+        root.dataset.theme = scheduleState.theme;
+        root.style.colorScheme =
+            scheduleState.theme === "dark" ? "dark" : "light";
+    }, [scheduleState.theme]);
+
     return (
         <ScheduleContext.Provider value={scheduleState}>
             <ScheduleDispatchContext.Provider value={dispatch}>

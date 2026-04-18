@@ -46,15 +46,15 @@ export default function NoteCard({
                         className={`w-1 self-stretch rounded-full shrink-0 ${colorClass}`}
                     />
                     <div className="flex-1 min-w-0">
-                        <h3 className="font-medium text-sm truncate">
+                        <h3 className="app-text font-medium text-sm truncate">
                             {note.title}
                         </h3>
                         {activityLabel ? (
-                            <p className="mt-1 line-clamp-1 text-[11px] text-slate-400">
+                            <p className="app-text-subtle mt-1 line-clamp-1 text-[11px]">
                                 {activityLabel}
                             </p>
                         ) : null}
-                        <p className="mt-1 line-clamp-2 text-xs text-slate-500">
+                        <p className="app-text-muted mt-1 line-clamp-2 text-xs">
                             {note.content}
                         </p>
                     </div>
