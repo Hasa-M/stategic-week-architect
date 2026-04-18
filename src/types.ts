@@ -48,14 +48,6 @@ export interface PlacedActivity extends ActivitySnapshot {
 
 export type ActivityDraft = ActivitySnapshot;
 
-export type PlacedActivityDraft = Pick<
-    PlacedActivity,
-    "templateId" | "day" | "startTime" | "endTime"
->;
-
-export type PlacedActivityUpdate = PlacedActivityDraft &
-    Pick<PlacedActivity, "placedId">;
-
 export type DaysGrid = {
     days: Day[];
     slotDuration: SlotWindow;
@@ -68,9 +60,32 @@ export type Note = {
     title: string;
     content: string;
     color: Color;
+    activityId: string; // Association with a PlacedActivity
+};
+
+export type ActivityNoteDraft = Omit<Note, "id" | "activityId">;
+
+export type ActivityNoteInput = ActivityNoteDraft & {
+    id?: string;
 };
 
 export type NoteDraft = Omit<Note, "id">;
+
+export type PlacedActivityDraft = Pick<
+    PlacedActivity,
+    "templateId" | "day" | "startTime" | "endTime"
+> & {
+    notes?: ActivityNoteDraft[];
+};
+
+export type PlacedActivityUpdate = Pick<
+    PlacedActivity,
+    "templateId" | "day" | "startTime" | "endTime" | "placedId"
+>;
+
+export type SavePlacedActivityPayload = PlacedActivityUpdate & {
+    notes: ActivityNoteInput[];
+};
 
 export type ScheduleState = {
     id: string;
@@ -84,7 +99,7 @@ export type ScheduleState = {
 export type ScheduleAction =
     | { type: "LOAD_STATE"; payload: ScheduleState }
     | { type: "SET_NAME"; payload: string }
-        | { type: "ADD_TEMPLATE"; payload: ActivityDraft }
+    | { type: "ADD_TEMPLATE"; payload: ActivityDraft }
     | {
           type: "EDIT_TEMPLATE";
           payload: { activity: Activity; toPropagate: boolean };
@@ -92,15 +107,19 @@ export type ScheduleAction =
     | { type: "DELETE_TEMPLATE"; payload: string }
     | {
           type: "PLACE_ACTIVITY";
-                    payload: PlacedActivityDraft;
+          payload: PlacedActivityDraft;
       }
     | {
           type: "EDIT_PLACED_ACTIVITY";
-                    payload: PlacedActivityUpdate;
+          payload: PlacedActivityUpdate;
       }
+        | {
+                    type: "SAVE_PLACED_ACTIVITY";
+                    payload: SavePlacedActivityPayload;
+            }
     | { type: "REMOVE_PLACED_ACTIVITY"; payload: string }
-        | { type: "SET_GRID_DAYS"; payload: Day[] }
-        | { type: "SET_GRID_SLOT_DURATION"; payload: SlotWindow }
+    | { type: "SET_GRID_DAYS"; payload: Day[] }
+    | { type: "SET_GRID_SLOT_DURATION"; payload: SlotWindow }
     | { type: "ADD_NOTE"; payload: NoteDraft }
     | { type: "EDIT_NOTE"; payload: Note }
     | { type: "REMOVE_NOTE"; payload: string };

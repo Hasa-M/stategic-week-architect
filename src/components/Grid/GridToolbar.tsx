@@ -1,12 +1,11 @@
 import { Plus } from "lucide-react";
 import { useMemo } from "react";
 
-import type { FormFieldConfig } from "@/components/Forms/FormField";
-import { FormModal } from "@/components/Forms/FormModal";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { useDispatch, useScheduleContext } from "@/context/hooks";
-import type { Day, SlotWindow } from "@/types";
+import type { Day, PlacedActivityDraft, SlotWindow } from "@/types";
+import PlaceActivityModal from "./PlaceActivityModal";
 
 const ALL_DAYS: Day[] = [
     "Monday",
@@ -28,13 +27,6 @@ const SLOT_OPTIONS: { value: SlotWindow; label: string }[] = [
     { value: 180, label: "3 hours" },
     { value: 240, label: "4 hours" },
 ];
-
-type PlaceActivityFormData = {
-    templateId: string;
-    day: string;
-    startTime: string;
-    endTime: string;
-};
 
 function formatMinutes(minutes: number) {
     const hours = Math.floor(minutes / 60);
@@ -76,45 +68,6 @@ export default function GridToolbar() {
         return options;
     }, [schedule.grid.endTime, schedule.grid.slotDuration, schedule.grid.startTime]);
 
-    const placementFields = useMemo<FormFieldConfig<PlaceActivityFormData>[]>(
-        () => [
-            {
-                name: "templateId",
-                label: "Template",
-                type: "select" as const,
-                options: templateOptions,
-                placeholder: "Choose a template",
-                required: true,
-                showColorIndicator: true,
-            },
-            {
-                name: "day",
-                label: "Day",
-                type: "select" as const,
-                options: ALL_DAYS.map((day) => ({ value: day, label: day })),
-                placeholder: "Choose a day",
-                required: true,
-            },
-            {
-                name: "startTime",
-                label: "Start time",
-                type: "select" as const,
-                options: timeOptions.slice(0, -1),
-                placeholder: "Choose a start time",
-                required: true,
-            },
-            {
-                name: "endTime",
-                label: "End time",
-                type: "select" as const,
-                options: timeOptions.slice(1),
-                placeholder: "Choose an end time",
-                required: true,
-            },
-        ],
-        [templateOptions, timeOptions]
-    );
-
     const toggleDay = (day: Day) => {
         const selectedDays = schedule.grid.days;
         const isSelected = selectedDays.includes(day);
@@ -139,22 +92,17 @@ export default function GridToolbar() {
         });
     };
 
-    const handlePlaceActivity = (data: PlaceActivityFormData) => {
+    const handlePlaceActivity = (data: PlacedActivityDraft) => {
         dispatch({
             type: "PLACE_ACTIVITY",
-            payload: {
-                templateId: data.templateId,
-                day: data.day as Day,
-                startTime: Number(data.startTime),
-                endTime: Number(data.endTime),
-            },
+            payload: data,
         });
     };
 
     return (
-        <div className="flex flex-col gap-4 py-4 xl:flex-row xl:items-center">
-            <div className="bg-surface flex flex-1 flex-wrap items-center gap-2 rounded-2xl p-3 shadow-sm">
-                <span className="mr-2 text-sm font-medium text-gray-500">
+        <div className="flex flex-col gap-4 py-1 xl:flex-row xl:items-center">
+            <div className="app-panel-muted flex flex-1 flex-wrap items-center gap-2 p-3.5">
+                <span className="mr-2 text-sm font-medium text-slate-500">
                     Visible days
                 </span>
                 {ALL_DAYS.map((day) => {
@@ -175,8 +123,8 @@ export default function GridToolbar() {
                 })}
             </div>
 
-            <div className="bg-surface flex flex-1 items-center gap-3 rounded-2xl p-3 shadow-sm">
-                <span className="shrink-0 text-sm font-medium text-gray-500">
+            <div className="app-panel-muted flex flex-1 items-center gap-3 p-3.5">
+                <span className="shrink-0 text-sm font-medium text-slate-500">
                     Slot size
                 </span>
                 <Select
@@ -192,31 +140,27 @@ export default function GridToolbar() {
                 />
             </div>
 
-            <FormModal<PlaceActivityFormData>
-                title="Place Activity"
-                description={
-                    templateOptions.length === 0
-                        ? "Create at least one template before placing activities on the grid."
-                        : "Choose a template, a day, and a time range to place a new activity."
-                }
-                fields={placementFields}
-                onSubmit={handlePlaceActivity}
-                validate={(data) => {
-                    if (Number(data.endTime) <= Number(data.startTime)) {
-                        return "End time must be after the start time.";
-                    }
-
-                    return true;
-                }}
-            >
+            {templateOptions.length === 0 ? (
                 <Button
                     className="rounded-full"
-                    disabled={templateOptions.length === 0}
+                    disabled
+                    title="Create at least one template before placing activities on the grid."
                 >
                     <Plus size={16} />
                     Add Activity
                 </Button>
-            </FormModal>
+            ) : (
+                <PlaceActivityModal
+                    templateOptions={templateOptions}
+                    timeOptions={timeOptions}
+                    onSubmit={handlePlaceActivity}
+                >
+                    <Button className="rounded-full">
+                        <Plus size={16} />
+                        Add Activity
+                    </Button>
+                </PlaceActivityModal>
+            )}
         </div>
     );
 }

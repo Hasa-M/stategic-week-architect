@@ -8,7 +8,8 @@
  * and input types for a specific entity's form.
  */
 
-import type { ActivityDraft, NoteDraft, Color } from "@/types";
+import type { SelectOption } from "@/components/ui/select";
+import type { ActivityDraft, ActivityNoteDraft, Color, NoteDraft } from "@/types";
 import type { FormFieldConfig } from "./components/Forms/FormField";
 
 /**
@@ -100,7 +101,7 @@ const activityFieldsForEdit: FormFieldConfig<ActivityWithPropagate>[] = [
     },
 ];
 
-const noteFields: FormFieldConfig<NoteDraft>[] = [
+const noteBaseFields: FormFieldConfig<ActivityNoteDraft>[] = [
     {
         name: "title",
         label: "Title",
@@ -126,4 +127,27 @@ const noteFields: FormFieldConfig<NoteDraft>[] = [
     },
 ];
 
-export { activityFields, activityFieldsForEdit, noteFields, COLOR_OPTIONS };
+function buildNoteFields(
+    activityOptions: SelectOption[]
+): FormFieldConfig<NoteDraft>[] {
+    return [
+        {
+            name: "activityId",
+            label: "Activity",
+            type: "select",
+            options: activityOptions,
+            placeholder: "Choose an activity",
+            required: true,
+            showColorIndicator: true,
+        },
+        ...noteBaseFields,
+    ];
+}
+
+export {
+    activityFields,
+    activityFieldsForEdit,
+    buildNoteFields,
+    COLOR_OPTIONS,
+    noteBaseFields,
+};

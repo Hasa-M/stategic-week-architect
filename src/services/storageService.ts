@@ -1,6 +1,19 @@
 import type { ScheduleState } from "@/types";
 
 const STORAGE_KEY = "schedule_state_v1";
+const VALID_COLORS = new Set([
+    "red",
+    "amber",
+    "lime",
+    "emerald",
+    "cyan",
+    "blue",
+    "violet",
+    "fuchsia",
+    "pink",
+    "slate",
+    "stone",
+]);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === "object" && value !== null;
@@ -27,6 +40,31 @@ function isScheduleState(value: unknown): value is ScheduleState {
     );
 }
 
+function normalizeScheduleState(state: ScheduleState): ScheduleState {
+    const normalizedNotes = Object.fromEntries(
+        Object.entries(state.notes).filter(([, note]) => {
+            return (
+                typeof note.id === "string" &&
+                typeof note.title === "string" &&
+                typeof note.content === "string" &&
+                typeof note.activityId === "string" &&
+                note.activityId in state.placedActivities &&
+                typeof note.color === "string" &&
+                VALID_COLORS.has(note.color)
+            );
+        })
+    );
+
+    if (Object.keys(normalizedNotes).length !== Object.keys(state.notes).length) {
+        console.warn("Discarded notes with missing or invalid activity associations.");
+    }
+
+    return {
+        ...state,
+        notes: normalizedNotes,
+    };
+}
+
 export const storageService = {
     loadState: (): ScheduleState | null => {
         try {
@@ -43,7 +81,7 @@ export const storageService = {
                 return null;
             }
 
-            return parsedState;
+            return normalizeScheduleState(parsedState);
         } catch (e) {
             console.error("Failed to load schedule from storage:", e);
             return null;

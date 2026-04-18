@@ -9,7 +9,7 @@ type SidebarProps = {
 
 export default function Sidebar({ view }: SidebarProps) {
     return (
-        <div className="h-full">
+        <div className="app-panel h-full overflow-hidden p-4 md:p-5">
             {view === "notes" ? <NotesSidebar /> : <SummaryDashboard />}
         </div>
     );

@@ -1,7 +1,8 @@
 import { useState, useCallback } from "react";
 import type { ReactNode } from "react";
-import { X, Check } from "lucide-react";
+import { X, Check, Trash2 } from "lucide-react";
 
+import { AlertModal } from "@/components/Modals/AlertModal/AlertModal";
 import {
     Dialog,
     DialogClose,
@@ -18,6 +19,15 @@ import FormField from "@/components/Forms/FormField";
 
 type FormMode = "add" | "edit";
 
+type FormDeleteAction = {
+    title: string;
+    description: ReactNode;
+    onConfirm: () => void;
+    buttonLabel?: string;
+    confirmLabel?: string;
+    cancelLabel?: string;
+};
+
 type FormModalProps<T extends object> = {
     title: string;
     description: ReactNode;
@@ -30,6 +40,7 @@ type FormModalProps<T extends object> = {
     cancelLabel?: string;
     closeOnSubmit?: boolean;
     validate?: (data: T) => boolean | string;
+    deleteAction?: FormDeleteAction;
 };
 
 /**
@@ -48,6 +59,7 @@ export function FormModal<T extends object>({
     cancelLabel,
     closeOnSubmit = true,
     validate,
+    deleteAction,
 }: FormModalProps<T>) {
     const [isOpen, setIsOpen] = useState(false);
 
@@ -127,23 +139,46 @@ export function FormModal<T extends object>({
                     <DialogDescription>{description}</DialogDescription>
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-5">
                     {getFieldsWithInitialData().map((field) => (
                         <FormField<T> key={field.name} config={field} />
                     ))}
 
-                    <DialogFooter className="pt-4">
-                        <DialogClose asChild>
-                            <Button type="button" variant="outline">
-                                <X />
-                                {effectiveCancelLabel}
-                            </Button>
-                        </DialogClose>
+                    <DialogFooter className="mt-1 gap-3 border-t border-primary/8 pt-5 sm:items-center sm:justify-between">
+                        <div>
+                            {deleteAction ? (
+                                <AlertModal
+                                    title={deleteAction.title}
+                                    description={deleteAction.description}
+                                    onConfirm={() => {
+                                        deleteAction.onConfirm();
+                                        setIsOpen(false);
+                                    }}
+                                    confirmLabel={deleteAction.confirmLabel ?? "Delete"}
+                                    cancelLabel={deleteAction.cancelLabel}
+                                    variant="destructive"
+                                >
+                                    <Button type="button" variant="destructive">
+                                        <Trash2 />
+                                        {deleteAction.buttonLabel ?? "Delete"}
+                                    </Button>
+                                </AlertModal>
+                            ) : null}
+                        </div>
 
-                        <Button type="submit">
-                            <Check />
-                            {effectiveSubmitLabel}
-                        </Button>
+                        <div className="flex flex-col-reverse gap-2 sm:flex-row">
+                            <DialogClose asChild>
+                                <Button type="button" variant="outline">
+                                    <X />
+                                    {effectiveCancelLabel}
+                                </Button>
+                            </DialogClose>
+
+                            <Button type="submit">
+                                <Check />
+                                {effectiveSubmitLabel}
+                            </Button>
+                        </div>
                     </DialogFooter>
                 </form>
             </DialogContent>

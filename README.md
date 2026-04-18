@@ -1,6 +1,6 @@
 # Strategic Weekly Architect
 
-A weekly schedule planning application designed to help users organize activities with a focus on strategic time management. Create reusable activity templates, place them on a visual weekly grid, and manage notes — all with a modern, type-safe React architecture.
+A weekly schedule planning application designed to help users organize activities with a focus on strategic time management. Create reusable activity templates, place them on a visual weekly grid, and manage activity-linked notes — all with a modern, type-safe React architecture.
 
 ## Features
 
@@ -8,7 +8,7 @@ A weekly schedule planning application designed to help users organize activitie
 - **Weekly Schedule Grid** — Visual calendar interface that renders placed activities across visible days
 - **Grid Controls** — Filter visible days, change slot duration, and place activities directly from the toolbar
 - **Color-Coded Activities** — 11 color options for visual organization
-- **Notes System** — Sidebar for reminders and tasks
+- **Notes System** — Sidebar for notes linked to placed activities
 - **Schedule Summary** — Sidebar metrics for planned hours, busiest day, templates, and notes
 - **Persistent State** — LocalStorage integration for automatic save/restore
 - **Template Propagation** — Smart update logic when editing templates

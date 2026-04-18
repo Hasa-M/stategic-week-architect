@@ -115,21 +115,31 @@ const MOCK_PLACED: Record<string, PlacedActivity> = {
 const MOCK_NOTES_DATA: Record<string, Note> = {
     note_1: {
         id: "note_1",
-        title: "Deployment Credentials",
-        content: "AWS_ACCESS_KEY needs rotation before Friday deployment.",
+        title: "Define provider migration order",
+        content: "Move the auth and UI providers first so the refactor stays incremental.",
         color: "red",
+        activityId: "tpl_6",
     },
     note_2: {
         id: "note_2",
-        title: "Interview Prep",
-        content: "Review CAP theorem and isolation levels.",
+        title: "Keep selectors stable",
+        content: "Audit every consumer before replacing context access with store selectors.",
         color: "fuchsia",
+        activityId: "tpl_6",
     },
     note_3: {
         id: "note_3",
-        title: "Grocery List",
-        content: "Coffee, Milk, Bread.",
+        title: "Collect API edge cases",
+        content: "List authentication and token refresh paths before wiring the new endpoints.",
         color: "lime",
+        activityId: "tpl_1",
+    },
+    note_4: {
+        id: "note_4",
+        title: "Reserve focus block",
+        content: "Keep the first 90 minutes notification-free for architecture review.",
+        color: "cyan",
+        activityId: "tpl_4",
     },
 };
 

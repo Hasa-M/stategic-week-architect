@@ -88,9 +88,9 @@ function Select({
                     id={id}
                     data-slot="select-trigger"
                     className={cn(
-                        "flex h-9 w-full items-center justify-between gap-2 rounded-md border-2 border-primary bg-surface px-3 py-2 text-sm whitespace-nowrap shadow-xs outline-none",
-                        "data-placeholder:text-gray-400",
-                        "focus:border-ring focus:ring-2 focus:ring-primary/50",
+                        "flex h-10 w-full items-center justify-between gap-2 rounded-2xl border border-primary/15 bg-white/86 px-3.5 py-2 text-sm text-slate-700 whitespace-nowrap shadow-[inset_0_1px_0_rgba(255,255,255,0.96),0_10px_26px_rgba(15,23,42,0.05)] backdrop-blur-sm outline-none",
+                        "data-placeholder:text-slate-400",
+                        "focus:border-primary/35 focus:bg-white focus:ring-4 focus:ring-primary/12",
                         "disabled:cursor-not-allowed disabled:opacity-50",
                         "[&>span]:line-clamp-1",
                         className
@@ -118,28 +118,28 @@ function Select({
                         data-slot="select-content"
                         position="popper"
                         className={cn(
-                            "relative z-50 max-h-72 min-w-32 overflow-hidden rounded-md border-2 border-primary bg-surface shadow-lg",
+                            "relative z-50 max-h-72 min-w-36 overflow-hidden rounded-3xl border border-white/80 bg-linear-to-b from-white/95 via-white/90 to-sky-50/75 shadow-[0_22px_60px_rgba(15,23,42,0.16)] backdrop-blur-xl",
                             "data-[state=open]:animate-in data-[state=closed]:animate-out",
                             "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
                             "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
                             "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1"
                         )}
                     >
-                        <SelectPrimitive.ScrollUpButton className="flex cursor-default items-center justify-center bg-surface py-1">
+                        <SelectPrimitive.ScrollUpButton className="flex cursor-default items-center justify-center bg-transparent py-1 text-slate-400">
                             <ChevronUpIcon className="size-4" />
                         </SelectPrimitive.ScrollUpButton>
-                        <SelectPrimitive.Viewport className="max-h-60 w-full min-w-(--radix-select-trigger-width) overflow-y-auto p-1">
+                        <SelectPrimitive.Viewport className="app-scrollbar max-h-60 w-full min-w-(--radix-select-trigger-width) overflow-y-auto p-1.5">
                             {options.map((option) => (
                                 <SelectPrimitive.Item
                                     key={option.value}
                                     value={option.value}
                                     disabled={option.disabled}
                                     className={cn(
-                                        "relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none",
-                                        "bg-surface",
-                                        "hover:bg-background-accent",
-                                        "focus:bg-background-accent",
-                                        "data-[state=checked]:bg-background-accent data-[state=checked]:text-primary data-[state=checked]:font-medium",
+                                        "relative flex w-full cursor-pointer select-none items-center rounded-2xl py-2 pl-3 pr-8 text-sm text-slate-600 outline-none transition-colors",
+                                        "bg-transparent",
+                                        "hover:bg-sky-50/85",
+                                        "focus:bg-sky-50/85",
+                                        "data-[state=checked]:bg-sky-100/90 data-[state=checked]:text-primary data-[state=checked]:font-medium",
                                         "data-disabled:pointer-events-none data-disabled:opacity-50"
                                     )}
                                 >
@@ -161,7 +161,7 @@ function Select({
                                 </SelectPrimitive.Item>
                             ))}
                         </SelectPrimitive.Viewport>
-                        <SelectPrimitive.ScrollDownButton className="flex cursor-default items-center justify-center bg-surface py-1">
+                        <SelectPrimitive.ScrollDownButton className="flex cursor-default items-center justify-center bg-transparent py-1 text-slate-400">
                             <ChevronDownIcon className="size-4" />
                         </SelectPrimitive.ScrollDownButton>
                     </SelectPrimitive.Content>

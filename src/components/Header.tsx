@@ -38,13 +38,16 @@ export default function Header({ sidebarView, onToggleSidebar }: HeaderProps) {
 
     let title = (
         <>
-            <p className="text-primary text-nowrap text-ellipsis text-[32px]/10 font-bold">
-                {schedule?.name ?? "Welcome to Your Weekly Schedule!"}
-            </p>
+            <div className="min-w-0">
+                <span className="app-badge mb-3 w-fit">Weekly Schedule</span>
+                <p className="text-nowrap text-ellipsis text-[32px]/10 font-bold tracking-tight text-slate-800">
+                    {schedule?.name ?? "Welcome to Your Weekly Schedule!"}
+                </p>
+            </div>
             <Button
                 variant="outline"
                 size="icon-sm"
-                className="invisible group-hover:visible opacity-0 group-hover:opacity-100 rounded-full transition-all duration-300 ease-in-out"
+                className="invisible opacity-0 group-hover:visible group-hover:opacity-100"
                 onClick={handleEdit}
             >
                 <Pencil />
@@ -62,7 +65,7 @@ export default function Header({ sidebarView, onToggleSidebar }: HeaderProps) {
                         schedule?.name ?? "Welcome to Your Weekly Schedule!"
                     }
                     ref={input}
-                    className="text-medium font-bold"
+                    className="max-w-xl text-lg font-bold"
                 />
                 <Button
                     variant="outline"
@@ -85,12 +88,12 @@ export default function Header({ sidebarView, onToggleSidebar }: HeaderProps) {
     }
 
     return (
-        <header className="p-0 flex flex-row flex-wrap gap-4">
-            <span className="group flex-1 flex items-center gap-2">
+        <header className="app-panel flex flex-row flex-wrap items-center gap-4 p-5 md:p-6">
+            <span className="group flex min-w-0 flex-1 items-center gap-3">
                 {title}
             </span>
             <Button variant="ghost" size="lg" onClick={onToggleSidebar}>
-                {sidebarView === "summary" ? "View notes" : "View summary"}{" "}
+                {sidebarView === "summary" ? "View all notes" : "View summary"}{" "}
                 <ArrowRightIcon />
             </Button>
         </header>

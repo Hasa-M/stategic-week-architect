@@ -63,9 +63,9 @@ function DialogContent({
                     <DialogPrimitive.Close
                         data-slot="dialog-close"
                         className={cn(
-                            "absolute top-4 right-4 rounded-sm opacity-70 transition-opacity",
-                            "hover:opacity-100",
-                            "focus:ring-ring focus:ring-2 focus:outline-hidden",
+                            "absolute top-5 right-5 rounded-full border border-white/80 bg-white/78 p-2 text-slate-400 shadow-[0_10px_24px_rgba(15,23,42,0.08)] transition-all",
+                            "hover:-translate-y-0.5 hover:bg-white hover:text-slate-600",
+                            "focus:ring-primary/15 focus:ring-4 focus:outline-hidden",
                             "disabled:pointer-events-none",
                             "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
                         )}

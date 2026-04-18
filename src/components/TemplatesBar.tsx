@@ -37,7 +37,7 @@ export default function TemplatesBar() {
     );
 
     return (
-        <ul className="pt-6 pb-0 px-0 flex flex-row flex-wrap gap-4 items-center">
+        <ul className="app-panel-muted flex flex-row flex-wrap items-center gap-3 p-3.5">
             <FormModal<ActivityDraft>
                 title="Add Template"
                 description="Create a new activity template that can be placed on your schedule."

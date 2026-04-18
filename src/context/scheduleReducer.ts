@@ -1,6 +1,9 @@
 import {
     type Activity,
+    type ActivityNoteDraft,
+    type ActivityNoteInput,
     type ActivitySnapshot,
+    type Note,
     type ScheduleAction,
     type ScheduleState,
 } from "@/types";
@@ -93,6 +96,11 @@ export function scheduleReducer(
 
         case "DELETE_TEMPLATE": {
             const templateId = action.payload;
+            const removedPlacedIds = new Set(
+                Object.values(state.placedActivities)
+                    .filter((content) => content.templateId === templateId)
+                    .map((content) => content.placedId)
+            );
             const others = Object.fromEntries(
                 Object.entries(state.templates).filter(
                     ([id]) => id !== templateId
@@ -107,6 +115,7 @@ export function scheduleReducer(
                         ([, content]) => content.templateId !== templateId
                     )
                 ),
+                notes: filterNotesByActivityIds(state.notes, removedPlacedIds),
             };
         }
 
@@ -117,20 +126,26 @@ export function scheduleReducer(
                 return state;
             }
 
+            const { notes: noteDrafts, ...placedActivityDraft } = action.payload;
             const placedId = crypto.randomUUID();
+            const nextNotes = buildAssociatedNotes(noteDrafts, placedId);
 
             return {
                 ...state,
                 placedActivities: {
                     ...state.placedActivities,
                     [placedId]: {
-                        ...action.payload,
+                        ...placedActivityDraft,
                         placedId,
                         title: template.title,
                         description: template.description,
                         color: template.color,
                         subfactors: template.subfactors,
                     },
+                },
+                notes: {
+                    ...state.notes,
+                    ...nextNotes,
                 },
             };
         }
@@ -157,6 +172,36 @@ export function scheduleReducer(
             };
         }
 
+        case "SAVE_PLACED_ACTIVITY": {
+            const template = state.templates[action.payload.templateId];
+            const existingActivity = state.placedActivities[action.payload.placedId];
+
+            if (!template || !existingActivity) {
+                return state;
+            }
+
+            const { notes, ...placedActivityUpdate } = action.payload;
+
+            return {
+                ...state,
+                placedActivities: {
+                    ...state.placedActivities,
+                    [action.payload.placedId]: {
+                        ...placedActivityUpdate,
+                        title: template.title,
+                        description: template.description,
+                        color: template.color,
+                        subfactors: template.subfactors,
+                    },
+                },
+                notes: syncActivityNotes(
+                    state.notes,
+                    action.payload.placedId,
+                    notes
+                ),
+            };
+        }
+
         case "REMOVE_PLACED_ACTIVITY":
             return {
                 ...state,
@@ -164,6 +209,10 @@ export function scheduleReducer(
                     Object.entries(state.placedActivities).filter(
                         ([id]) => id !== action.payload
                     )
+                ),
+                notes: filterNotesByActivityIds(
+                    state.notes,
+                    new Set([action.payload])
                 ),
             };
 
@@ -186,6 +235,10 @@ export function scheduleReducer(
             };
 
         case "ADD_NOTE": {
+            if (!state.placedActivities[action.payload.activityId]) {
+                return state;
+            }
+
             const id = crypto.randomUUID();
 
             return {
@@ -201,6 +254,13 @@ export function scheduleReducer(
         }
 
         case "EDIT_NOTE":
+            if (
+                !state.notes[action.payload.id] ||
+                !state.placedActivities[action.payload.activityId]
+            ) {
+                return state;
+            }
+
             return {
                 ...state,
                 notes: {
@@ -255,4 +315,79 @@ function getPropagatedActivityChanges(
     }
 
     return changes;
+}
+
+function buildAssociatedNotes(
+    noteDrafts: ActivityNoteDraft[] | undefined,
+    activityId: string
+): Record<string, Note> {
+    if (!noteDrafts?.length) {
+        return {};
+    }
+
+    return Object.fromEntries(
+        noteDrafts.map((noteDraft) => {
+            const id = crypto.randomUUID();
+
+            return [
+                id,
+                {
+                    id,
+                    activityId,
+                    ...noteDraft,
+                },
+            ];
+        })
+    );
+}
+
+function filterNotesByActivityIds(
+    notes: Record<string, Note>,
+    activityIds: Set<string>
+): Record<string, Note> {
+    if (activityIds.size === 0) {
+        return notes;
+    }
+
+    return Object.fromEntries(
+        Object.entries(notes).filter(
+            ([, note]) => !activityIds.has(note.activityId)
+        )
+    );
+}
+
+function syncActivityNotes(
+    notes: Record<string, Note>,
+    activityId: string,
+    noteInputs: ActivityNoteInput[]
+): Record<string, Note> {
+    const notesWithoutActivity = filterNotesByActivityIds(
+        notes,
+        new Set([activityId])
+    );
+
+    const nextActivityNotes = Object.fromEntries(
+        noteInputs.map((noteInput) => {
+            const canReuseId =
+                noteInput.id !== undefined &&
+                notes[noteInput.id]?.activityId === activityId;
+            const id = canReuseId ? noteInput.id : crypto.randomUUID();
+
+            return [
+                id,
+                {
+                    id,
+                    activityId,
+                    title: noteInput.title,
+                    content: noteInput.content,
+                    color: noteInput.color,
+                },
+            ];
+        })
+    );
+
+    return {
+        ...notesWithoutActivity,
+        ...nextActivityNotes,
+    };
 }

@@ -23,7 +23,7 @@ The codebase is part working product and part scaffold.
 Working or mostly working areas:
 
 - Template CRUD through the reducer and forms
-- Note CRUD through the reducer and forms
+- Note CRUD through the reducer and forms, with notes linked to placed activities
 - Local persistence through `localStorage`
 - Generic modal-based forms driven by field configuration
 - A real schedule grid that renders placed activities
@@ -66,7 +66,7 @@ Important concepts:
 
 - `Activity` is the template-level concept.
 - `PlacedActivity` is a scheduled instance on a day and time range.
-- `Note` is sidebar content, separate from schedule placement.
+- `Note` is sidebar content associated with a placed activity through `activityId`.
 - `DaysGrid` defines the visible time grid.
 
 Some fields overlap between template and placed activity data, but they should still be treated as different concepts. If future refactors make those types more explicit, that is a positive direction.
