@@ -1,6 +1,14 @@
-import { CalendarDays, Clock3, LayoutGrid, StickyNote } from "lucide-react";
+import {
+    CalendarDays,
+    Clock3,
+    LayoutGrid,
+    SlidersHorizontal,
+    StickyNote,
+} from "lucide-react";
 import { useMemo } from "react";
 
+import SidebarSectionHeader from "@/components/Sidebar/SidebarSectionHeader";
+import { Button } from "@/components/ui/button";
 import { useScheduleContext } from "@/context/hooks";
 import { clipActivityToVisibleRange } from "@/lib/grid";
 
@@ -49,19 +57,31 @@ export default function SummaryDashboard() {
             { day: visibleDays[0] ?? "Monday", hours: 0 }
         ) ?? null;
     const recentTemplates = Object.values(schedule.templates).slice(0, 4);
+    const visibleSummary = `${visibleActivities.length} visible activit${visibleActivities.length === 1 ? "y" : "ies"} across ${visibleDays.length} visible day${visibleDays.length === 1 ? "" : "s"}.`;
 
     return (
-        <div className="app-scrollbar flex h-full min-h-0 flex-col gap-4 overflow-y-auto pr-1">
-            <div className="app-panel-muted app-text p-5">
-                <p className="app-badge w-fit">Weekly Overview</p>
-                <p className="app-text-strong mt-4 text-2xl font-bold tracking-tight">
-                    {schedule.name}
-                </p>
-                <p className="app-text-muted mt-3 text-sm">
-                    {visibleActivities.length} visible activit{visibleActivities.length === 1 ? "y" : "ies"} across {visibleDays.length}{" "}
-                    visible day{visibleDays.length === 1 ? "" : "s"}
-                </p>
-            </div>
+        <div className="app-scrollbar flex h-full min-h-0 flex-col gap-4 p-2">
+            <SidebarSectionHeader
+                title="Summary Dashboard"
+                description={visibleSummary}
+                action={
+                    <span
+                        className="inline-flex"
+                        title="Widget editing is not available yet."
+                    >
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="icon-sm"
+                            className="rounded-full"
+                            aria-label="Edit dashboard widgets"
+                            disabled
+                        >
+                            <SlidersHorizontal className="size-4" />
+                        </Button>
+                    </span>
+                }
+            />
 
             <div className="grid gap-3 sm:grid-cols-2">
                 <div className="app-card p-4">

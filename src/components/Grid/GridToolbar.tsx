@@ -1,5 +1,5 @@
 import { Expand, Minimize2, Plus } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, type ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
@@ -26,10 +26,11 @@ const SLOT_OPTIONS: {
 type GridSettingsControlsProps = {
     className?: string;
     stacked?: boolean;
+    trailingActions?: ReactNode;
 };
 
 type GridToolbarProps = {
-    layout?: "desktop" | "mobile";
+    layout?: "desktop" | "tablet" | "mobile";
     onOpenSettings?: () => void;
     isExpanded?: boolean;
     onToggleExpand?: () => void;
@@ -148,6 +149,7 @@ function ExpandGridAction({
 export function GridSettingsControls({
     className,
     stacked = false,
+    trailingActions,
 }: GridSettingsControlsProps) {
     const schedule = useScheduleContext();
     const dispatch = useDispatch();
@@ -218,7 +220,7 @@ export function GridSettingsControls({
         <div
             className={cn(
                 "flex flex-col gap-4",
-                !stacked && "xl:flex-row xl:flex-wrap xl:items-center",
+                !stacked && "md:flex-row md:flex-wrap md:items-center",
                 className
             )}
         >
@@ -244,7 +246,7 @@ export function GridSettingsControls({
                 })}
             </div>
 
-            <div className="app-panel-muted flex flex-1 flex-wrap items-center gap-3 p-3.5 xl:min-w-68">
+            <div className="app-panel-muted flex w-fit max-w-full flex-none flex-wrap items-center gap-3 self-start p-3.5 md:self-auto">
                 <span className="app-text-muted shrink-0 text-sm font-medium">
                     Slot size
                 </span>
@@ -272,29 +274,42 @@ export function GridSettingsControls({
                 </div>
             </div>
 
-            <div className="app-panel-muted flex flex-1 flex-wrap items-center gap-3 p-3.5 xl:min-w-72">
-                <span className="app-text-muted shrink-0 text-sm font-medium">
-                    Time range
-                </span>
-                <div className="flex min-w-0 flex-1 items-center gap-2">
-                    <Select
-                        id="grid-start-time"
-                        name="gridStartTime"
-                        value={String(startHour)}
-                        onValueChange={handleStartHourChange}
-                        options={startHourOptions}
-                        className="min-w-24 flex-1"
-                    />
-                    <span className="app-text-subtle text-sm font-medium">to</span>
-                    <Select
-                        id="grid-end-time"
-                        name="gridEndTime"
-                        value={String(endHour)}
-                        onValueChange={handleEndHourChange}
-                        options={endHourOptions}
-                        className="min-w-24 flex-1"
-                    />
+            <div
+                className={cn(
+                    "flex flex-col gap-4",
+                    trailingActions && !stacked && "md:basis-full md:flex-row md:items-center"
+                )}
+            >
+                <div className="app-panel-muted flex flex-1 flex-wrap items-center gap-3 p-3.5 xl:min-w-72 xl:basis-auto">
+                    <span className="app-text-muted shrink-0 text-sm font-medium">
+                        Time range
+                    </span>
+                    <div className="flex min-w-0 flex-1 items-center gap-2">
+                        <Select
+                            id="grid-start-time"
+                            name="gridStartTime"
+                            value={String(startHour)}
+                            onValueChange={handleStartHourChange}
+                            options={startHourOptions}
+                            className="min-w-24 flex-1"
+                        />
+                        <span className="app-text-subtle text-sm font-medium">to</span>
+                        <Select
+                            id="grid-end-time"
+                            name="gridEndTime"
+                            value={String(endHour)}
+                            onValueChange={handleEndHourChange}
+                            options={endHourOptions}
+                            className="min-w-24 flex-1"
+                        />
+                    </div>
                 </div>
+
+                {trailingActions ? (
+                    <div className="flex flex-wrap items-center justify-end gap-2 md:flex-none md:self-center">
+                        {trailingActions}
+                    </div>
+                ) : null}
             </div>
         </div>
     );
@@ -341,6 +356,25 @@ function GridToolbarContent({
                         onToggleExpand={onToggleExpand}
                     />
                 </div>
+            </div>
+        );
+    }
+
+    if (layout === "tablet") {
+        return (
+            <div className="py-1">
+                <GridSettingsControls
+                    className="flex-1"
+                    trailingActions={
+                        <>
+                            <AddActivityAction />
+                            <ExpandGridAction
+                                isExpanded={isExpanded}
+                                onToggleExpand={onToggleExpand}
+                            />
+                        </>
+                    }
+                />
             </div>
         );
     }

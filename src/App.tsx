@@ -136,7 +136,7 @@ function App() {
                     )}
                 >
                     <GridToolbar
-                        layout={layoutMode === "mobile" ? "mobile" : "desktop"}
+                        layout={layoutMode}
                         onOpenSettings={
                             layoutMode === "mobile"
                                 ? () => setMobileSettingsOpen(true)
@@ -168,7 +168,7 @@ function App() {
             className={cn(
                 "app-shell px-4 py-4 md:px-6 xl:px-8",
                 layoutMode === "mobile" &&
-                    "pb-[calc(6.75rem+env(safe-area-inset-bottom))]"
+                    "pb-[calc(5.5rem+env(safe-area-inset-bottom))]"
             )}
         >
             <div

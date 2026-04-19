@@ -3,11 +3,12 @@ import { useCallback, useMemo } from "react";
 
 import type { FormFieldConfig } from "@/components/Forms/FormField";
 import { Button } from "@/components/ui/button";
-import NoteCard from "./Card/NoteCard";
-import { FormModal } from "./Forms/FormModal";
+import NoteCard from "../Card/NoteCard";
+import { FormModal } from "../Forms/FormModal";
 import { buildNoteFields } from "@/fieldConfigs";
 import { useDispatch, useScheduleContext } from "@/context/hooks";
 import type { Note, NoteDraft, PlacedActivity } from "@/types";
+import SidebarSectionHeader from "@/components/Sidebar/SidebarSectionHeader";
 
 const DAY_ORDER: Record<PlacedActivity["day"], number> = {
     Monday: 0,
@@ -111,6 +112,9 @@ export default function NotesSidebar() {
     }, [activityOrder, schedule?.notes]);
 
     const canAddNotes = activityOptions.length > 0;
+    const notesDescription = canAddNotes
+        ? `${noteList.length} note${noteList.length === 1 ? "" : "s"} linked to ${activityOptions.length} placed activit${activityOptions.length === 1 ? "y" : "ies"}.`
+        : "Place an activity on the grid to start collecting notes.";
 
     const handleAddNote = useCallback(
         (data: NoteDraft) => {
@@ -134,45 +138,52 @@ export default function NotesSidebar() {
     );
 
     return (
-        <div className="flex h-full min-h-0 flex-col">
-            <div className="mb-4 flex items-center justify-between gap-3">
-                <div>
-                    <span className="app-badge mb-2 w-fit">Notes</span>
-                    <h2 className="app-text-strong text-lg font-semibold">
-                        All Activity Notes
-                    </h2>
-                </div>
-                {canAddNotes ? (
-                    <FormModal<NoteDraft>
-                        title="Add a Note to an Activity"
-                        description="Create a new note and link it to an existing placed activity."
-                        fields={noteFields}
-                        onSubmit={handleAddNote}
-                    >
-                        <Button size="icon-sm" className="rounded-full">
-                            <Plus />
-                        </Button>
-                    </FormModal>
-                ) : (
-                    <Button
-                        size="icon-sm"
-                        className="rounded-full"
-                        disabled
-                        title="Place an activity before adding notes."
-                    >
-                        <Plus />
-                    </Button>
-                )}
-            </div>
+        <div className="flex h-full min-h-0 flex-col gap-4 p-2">
+            <SidebarSectionHeader
+                title="All Activity Notes"
+                description={notesDescription}
+                action={
+                    canAddNotes ? (
+                        <FormModal<NoteDraft>
+                            title="Add a Note to an Activity"
+                            description="Create a new note and link it to an existing placed activity."
+                            fields={noteFields}
+                            onSubmit={handleAddNote}
+                        >
+                            <Button
+                                size="icon-sm"
+                                className="rounded-full"
+                                aria-label="Add note"
+                            >
+                                <Plus />
+                            </Button>
+                        </FormModal>
+                    ) : (
+                        <span
+                            className="inline-flex"
+                            title="Place an activity before adding notes."
+                        >
+                            <Button
+                                size="icon-sm"
+                                className="rounded-full"
+                                aria-label="Add note"
+                                disabled
+                            >
+                                <Plus />
+                            </Button>
+                        </span>
+                    )
+                }
+            />
 
             {noteList.length === 0 ? (
-                <div className="app-card app-text-muted flex items-center justify-center px-4 py-10 text-center text-sm">
+                <div className="app-card app-text-muted flex min-h-0 flex-1 items-center justify-center px-4 py-10 text-center text-sm">
                     {canAddNotes
                         ? "No notes yet. Click + to add one."
                         : "Place an activity on the grid before adding notes."}
                 </div>
             ) : (
-                <ul className="app-scrollbar flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-1">
+                <ul className="flex min-h-0 flex-1 list-none flex-col gap-3">
                     {noteList.map((note) => (
                         <li key={note.id}>
                             <NoteCard

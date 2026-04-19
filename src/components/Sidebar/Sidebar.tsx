@@ -1,4 +1,4 @@
-import NotesSidebar from "../NotesSidebar";
+import NotesSidebar from "./NotesSidebar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import SummaryDashboard from "./SummaryDashboard";
@@ -27,12 +27,6 @@ export default function Sidebar({
         >
             {showViewSwitcher ? (
                 <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                        <span className="app-badge mb-2 w-fit">Sidebar</span>
-                        <p className="app-text-strong text-lg font-semibold">
-                            Dashboard or notes
-                        </p>
-                    </div>
 
                     <div className="app-panel-muted flex items-center gap-2 p-1.5">
                         <Button

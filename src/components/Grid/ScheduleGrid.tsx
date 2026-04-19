@@ -64,7 +64,7 @@ function clamp(value: number, min: number, max: number) {
 function resolveDayFromPointerX(
     clientX: number,
     days: Day[],
-    dayColumnRefs: Partial<Record<Day, HTMLDivElement | null>>
+    dayColumnRefs: Partial<Record<Day, HTMLDivElement | null>>,
 ) {
     const dayRects = days
         .map((day) => {
@@ -96,7 +96,7 @@ function resolveDayFromPointerX(
     }
 
     const containingDay = dayRects.find(
-        ({ rect }) => clientX >= rect.left && clientX <= rect.right
+        ({ rect }) => clientX >= rect.left && clientX <= rect.right,
     );
 
     if (containingDay) {
@@ -106,7 +106,8 @@ function resolveDayFromPointerX(
     return dayRects.reduce((closestDay, candidate) => {
         const closestCenter =
             (closestDay.rect.left + closestDay.rect.right) / 2;
-        const candidateCenter = (candidate.rect.left + candidate.rect.right) / 2;
+        const candidateCenter =
+            (candidate.rect.left + candidate.rect.right) / 2;
 
         return Math.abs(candidateCenter - clientX) <
             Math.abs(closestCenter - clientX)
@@ -123,7 +124,7 @@ function resolveStartTimeFromPointer(
     gridStartTime: number,
     gridEndTime: number,
     slotDuration: number,
-    duration: number
+    duration: number,
 ) {
     const column = dayColumnRefs[day];
 
@@ -131,7 +132,8 @@ function resolveStartTimeFromPointer(
         return gridStartTime;
     }
 
-    const rawTop = clientY - column.getBoundingClientRect().top - pointerOffsetY;
+    const rawTop =
+        clientY - column.getBoundingClientRect().top - pointerOffsetY;
     const snappedSlotIndex = Math.round(rawTop / SLOT_HEIGHT);
     const unclampedStartTime = gridStartTime + snappedSlotIndex * slotDuration;
     const maxStartTime = Math.max(gridStartTime, gridEndTime - duration);
@@ -185,7 +187,7 @@ function buildDayOverlapLayout(dayActivities: VisiblePlacedActivity[]) {
         }
 
         let laneIndex = laneEndTimes.findIndex(
-            (laneEndTime) => activity.visibleStartTime >= laneEndTime
+            (laneEndTime) => activity.visibleStartTime >= laneEndTime,
         );
 
         if (laneIndex === -1) {
@@ -211,11 +213,15 @@ export default function ScheduleGrid() {
     const schedule = useScheduleContext();
     const dispatch = useDispatch();
     const { days, slotDuration, startTime, endTime } = schedule.grid;
-    const dayColumnRefs = useRef<Partial<Record<Day, HTMLDivElement | null>>>({});
+    const dayColumnRefs = useRef<Partial<Record<Day, HTMLDivElement | null>>>(
+        {},
+    );
     const dragStateRef = useRef<DragState | null>(null);
     const dragElementRef = useRef<HTMLButtonElement | null>(null);
     const [dragState, setDragState] = useState<DragState | null>(null);
-    const [selectedPlacedId, setSelectedPlacedId] = useState<string | null>(null);
+    const [selectedPlacedId, setSelectedPlacedId] = useState<string | null>(
+        null,
+    );
     const isDragging = dragState !== null;
 
     const slotTimes = useMemo(() => {
@@ -233,9 +239,9 @@ export default function ScheduleGrid() {
     const dayActivities = useMemo(
         () =>
             Object.values(schedule.placedActivities).filter((activity) =>
-                days.includes(activity.day)
+                days.includes(activity.day),
             ),
-        [days, schedule.placedActivities]
+        [days, schedule.placedActivities],
     );
 
     const templateOptions = useMemo(
@@ -245,7 +251,7 @@ export default function ScheduleGrid() {
                 label: template.title,
                 color: template.color,
             })),
-        [schedule.templates]
+        [schedule.templates],
     );
 
     const timeOptions = useMemo(() => {
@@ -275,7 +281,7 @@ export default function ScheduleGrid() {
 
                 return accumulator;
             },
-            {}
+            {},
         );
     }, [schedule.notes]);
 
@@ -287,36 +293,41 @@ export default function ScheduleGrid() {
                             ...activity,
                             day: dragState.previewDay,
                             startTime: dragState.previewStartTime,
-                            endTime: dragState.previewStartTime + dragState.duration,
+                            endTime:
+                                dragState.previewStartTime + dragState.duration,
                         }
-                      : activity
+                      : activity,
               )
             : dayActivities;
 
         return nextActivities
             .map((activity) =>
-                clipActivityToVisibleRange(activity, startTime, endTime)
+                clipActivityToVisibleRange(activity, startTime, endTime),
             )
             .filter(
-                (activity): activity is VisiblePlacedActivity => activity !== null
+                (activity): activity is VisiblePlacedActivity =>
+                    activity !== null,
             );
     }, [dayActivities, dragState, endTime, startTime]);
 
     const overlapLayouts = useMemo(() => {
-        return days.reduce<Record<string, OverlapLayout>>((accumulator, day) => {
-            const dayActivities = renderedActivities.filter(
-                (activity) => activity.day === day
-            );
+        return days.reduce<Record<string, OverlapLayout>>(
+            (accumulator, day) => {
+                const dayActivities = renderedActivities.filter(
+                    (activity) => activity.day === day,
+                );
 
-            return {
-                ...accumulator,
-                ...buildDayOverlapLayout(dayActivities),
-            };
-        }, {});
+                return {
+                    ...accumulator,
+                    ...buildDayOverlapLayout(dayActivities),
+                };
+            },
+            {},
+        );
     }, [days, renderedActivities]);
 
     const selectedActivity = selectedPlacedId
-        ? schedule.placedActivities[selectedPlacedId] ?? null
+        ? (schedule.placedActivities[selectedPlacedId] ?? null)
         : null;
 
     const selectedActivityNotes = useMemo<ActivityNoteInput[]>(() => {
@@ -324,12 +335,14 @@ export default function ScheduleGrid() {
             return [];
         }
 
-        return (notesByActivity[selectedActivity.placedId] ?? []).map((note) => ({
-            id: note.id,
-            title: note.title,
-            content: note.content,
-            color: note.color,
-        }));
+        return (notesByActivity[selectedActivity.placedId] ?? []).map(
+            (note) => ({
+                id: note.id,
+                title: note.title,
+                content: note.content,
+                color: note.color,
+            }),
+        );
     }, [notesByActivity, selectedActivity]);
 
     useEffect(() => {
@@ -356,7 +369,7 @@ export default function ScheduleGrid() {
             dispatch({ type: "SAVE_PLACED_ACTIVITY", payload: data });
             setSelectedPlacedId(null);
         },
-        [dispatch]
+        [dispatch],
     );
 
     const handleDeletePlacedActivity = useCallback(
@@ -364,13 +377,13 @@ export default function ScheduleGrid() {
             dispatch({ type: "REMOVE_PLACED_ACTIVITY", payload: placedId });
             setSelectedPlacedId(null);
         },
-        [dispatch]
+        [dispatch],
     );
 
     const handleActivityPointerDown = useCallback(
         (
             event: ReactPointerEvent<HTMLButtonElement>,
-            activity: PlacedActivity
+            activity: PlacedActivity,
         ) => {
             if (event.pointerType === "mouse" && event.button !== 0) {
                 return;
@@ -395,7 +408,7 @@ export default function ScheduleGrid() {
             dragStateRef.current = nextDragState;
             setDragState(nextDragState);
         },
-        []
+        [],
     );
 
     const handleActivityKeyDown = useCallback(
@@ -405,7 +418,7 @@ export default function ScheduleGrid() {
                 setSelectedPlacedId(placedId);
             }
         },
-        []
+        [],
     );
 
     useEffect(() => {
@@ -419,13 +432,16 @@ export default function ScheduleGrid() {
         const handlePointerMove = (event: PointerEvent) => {
             const currentDragState = dragStateRef.current;
 
-            if (!currentDragState || event.pointerId !== currentDragState.pointerId) {
+            if (
+                !currentDragState ||
+                event.pointerId !== currentDragState.pointerId
+            ) {
                 return;
             }
 
             const distance = Math.hypot(
                 event.clientX - currentDragState.originClientX,
-                event.clientY - currentDragState.originClientY
+                event.clientY - currentDragState.originClientY,
             );
 
             if (!currentDragState.didDrag && distance < DRAG_THRESHOLD) {
@@ -435,7 +451,7 @@ export default function ScheduleGrid() {
             const previewDay = resolveDayFromPointerX(
                 event.clientX,
                 days,
-                dayColumnRefs.current
+                dayColumnRefs.current,
             );
             const previewStartTime = resolveStartTimeFromPointer(
                 event.clientY,
@@ -445,7 +461,7 @@ export default function ScheduleGrid() {
                 startTime,
                 endTime,
                 slotDuration,
-                currentDragState.duration
+                currentDragState.duration,
             );
             const nextDragState: DragState = {
                 ...currentDragState,
@@ -461,7 +477,10 @@ export default function ScheduleGrid() {
         const handlePointerEnd = (event: PointerEvent) => {
             const currentDragState = dragStateRef.current;
 
-            if (!currentDragState || event.pointerId !== currentDragState.pointerId) {
+            if (
+                !currentDragState ||
+                event.pointerId !== currentDragState.pointerId
+            ) {
                 return;
             }
 
@@ -488,7 +507,10 @@ export default function ScheduleGrid() {
         const handlePointerCancel = (event: PointerEvent) => {
             const currentDragState = dragStateRef.current;
 
-            if (!currentDragState || event.pointerId !== currentDragState.pointerId) {
+            if (
+                !currentDragState ||
+                event.pointerId !== currentDragState.pointerId
+            ) {
                 return;
             }
 
@@ -527,7 +549,7 @@ export default function ScheduleGrid() {
                             gridTemplateColumns: `${TIME_COLUMN_WIDTH}px repeat(${days.length}, minmax(0, 1fr))`,
                         }}
                     >
-                        <div className="app-grid-header-cell app-grid-slot-border app-text-muted border-b border-r border-primary/8 px-2 py-3 text-[11px] font-semibold uppercase tracking-wide">
+                        <div className="app-grid-header-cell app-grid-slot-border app-text-muted border-b border-r border-primary/8 pr-4 pt-4 pb-2 text-right text-[11px] font-semibold uppercase tracking-wide">
                             Time
                         </div>
                         {days.map((day) => (
@@ -543,7 +565,7 @@ export default function ScheduleGrid() {
                             {slotTimes.map((slot) => (
                                 <div
                                     key={slot.minutes}
-                                    className="app-grid-slot-border app-text-muted border-b px-2 py-2 text-[11px]"
+                                    className="app-grid-slot-border app-text-muted border-b pr-4 py-2 text-right text-[11px]"
                                     style={{ height: SLOT_HEIGHT }}
                                 >
                                     {slot.label}
@@ -553,7 +575,7 @@ export default function ScheduleGrid() {
 
                         {days.map((day) => {
                             const dayActivities = renderedActivities.filter(
-                                (activity) => activity.day === day
+                                (activity) => activity.day === day,
                             );
 
                             return (
@@ -563,7 +585,8 @@ export default function ScheduleGrid() {
                                         dayColumnRefs.current[day] = element;
                                     }}
                                     className={`app-grid-day-column app-grid-slot-border relative border-l border-primary/8 transition-colors ${
-                                        dragState?.didDrag && dragState.previewDay === day
+                                        dragState?.didDrag &&
+                                        dragState.previewDay === day
                                             ? "app-grid-day-column--preview"
                                             : ""
                                     }`}
@@ -579,7 +602,9 @@ export default function ScheduleGrid() {
 
                                     {dayActivities.map((activity) => {
                                         const activityNotes =
-                                            notesByActivity[activity.placedId] ?? [];
+                                            notesByActivity[
+                                                activity.placedId
+                                            ] ?? [];
                                         const overlapLayout = overlapLayouts[
                                             activity.placedId
                                         ] ?? {
@@ -588,10 +613,13 @@ export default function ScheduleGrid() {
                                             isOverlapping: false,
                                         };
                                         const isRangeClipped =
-                                            activity.visibleStartTime !== activity.startTime ||
-                                            activity.visibleEndTime !== activity.endTime;
+                                            activity.visibleStartTime !==
+                                                activity.startTime ||
+                                            activity.visibleEndTime !==
+                                                activity.endTime;
                                         const top =
-                                            ((activity.visibleStartTime - startTime) /
+                                            ((activity.visibleStartTime -
+                                                startTime) /
                                                 slotDuration) *
                                             SLOT_HEIGHT;
                                         const rawHeight = Math.max(
@@ -600,32 +628,39 @@ export default function ScheduleGrid() {
                                                 slotDuration) *
                                                 SLOT_HEIGHT -
                                                 6,
-                                            10
+                                            10,
                                         );
                                         const height = isRangeClipped
                                             ? rawHeight
-                                            : Math.max(rawHeight, SLOT_HEIGHT * 0.85);
+                                            : Math.max(
+                                                  rawHeight,
+                                                  SLOT_HEIGHT * 0.85,
+                                              );
                                         const colorStyles = getColorStyles(
-                                            activity.color
+                                            activity.color,
                                         );
                                         const maxVisibleNotes = Math.max(
                                             0,
-                                            Math.floor((height - 56) / 32)
+                                            Math.floor((height - 56) / 32),
                                         );
-                                        const visibleNotes = activityNotes.slice(
-                                            0,
-                                            maxVisibleNotes
-                                        );
+                                        const visibleNotes =
+                                            activityNotes.slice(
+                                                0,
+                                                maxVisibleNotes,
+                                            );
                                         const hiddenNotesCount = Math.max(
                                             0,
-                                            activityNotes.length - visibleNotes.length
+                                            activityNotes.length -
+                                                visibleNotes.length,
                                         );
                                         const isDraggedActivity =
                                             dragState?.didDrag &&
-                                            dragState.placedId === activity.placedId;
+                                            dragState.placedId ===
+                                                activity.placedId;
                                         const leftInset =
                                             ACTIVITY_SIDE_INSET +
-                                            overlapLayout.laneIndex * OVERLAP_STAGGER;
+                                            overlapLayout.laneIndex *
+                                                OVERLAP_STAGGER;
                                         const rightInset =
                                             ACTIVITY_SIDE_INSET +
                                             (overlapLayout.laneCount -
@@ -652,19 +687,20 @@ export default function ScheduleGrid() {
                                                     zIndex: isDraggedActivity
                                                         ? 30
                                                         : overlapLayout.isOverlapping
-                                                          ? 10 + overlapLayout.laneIndex
+                                                          ? 10 +
+                                                            overlapLayout.laneIndex
                                                           : 1,
                                                 }}
                                                 onPointerDown={(event) =>
                                                     handleActivityPointerDown(
                                                         event,
-                                                        activity
+                                                        activity,
                                                     )
                                                 }
                                                 onKeyDown={(event) =>
                                                     handleActivityKeyDown(
                                                         event,
-                                                        activity.placedId
+                                                        activity.placedId,
                                                     )
                                                 }
                                                 aria-label={`Edit ${activity.title}`}
@@ -675,38 +711,62 @@ export default function ScheduleGrid() {
                                                     {activity.title}
                                                 </div>
                                                 <p className="app-text-muted mt-1 text-xs">
-                                                    {formatMinutes(activity.startTime)} -{" "}
-                                                    {formatMinutes(activity.endTime)}
+                                                    {formatMinutes(
+                                                        activity.startTime,
+                                                    )}{" "}
+                                                    -{" "}
+                                                    {formatMinutes(
+                                                        activity.endTime,
+                                                    )}
                                                 </p>
                                                 {overlapLayout.isOverlapping && (
                                                     <p className="app-text-subtle mt-2 text-[10px] font-semibold uppercase tracking-[0.18em]">
-                                                        Overlap {overlapLayout.laneIndex + 1}/{overlapLayout.laneCount}
+                                                        Overlap{" "}
+                                                        {overlapLayout.laneIndex +
+                                                            1}
+                                                        /
+                                                        {
+                                                            overlapLayout.laneCount
+                                                        }
                                                     </p>
                                                 )}
                                                 {(visibleNotes.length > 0 ||
                                                     hiddenNotesCount > 0) && (
                                                     <ul className="mt-3 space-y-2">
-                                                        {visibleNotes.map((note) => {
-                                                            const noteStyles =
-                                                                getColorStyles(note.color);
+                                                        {visibleNotes.map(
+                                                            (note) => {
+                                                                const noteStyles =
+                                                                    getColorStyles(
+                                                                        note.color,
+                                                                    );
 
-                                                            return (
-                                                                <li
-                                                                    key={note.id}
-                                                                    className="app-text-soft flex items-start gap-2 text-xs"
-                                                                >
-                                                                    <span
-                                                                        className={`${noteStyles.solid} mt-1 h-2 w-2 shrink-0 rounded-full`}
-                                                                    />
-                                                                    <span className="min-w-0 truncate font-medium">
-                                                                        {note.title}
-                                                                    </span>
-                                                                </li>
-                                                            );
-                                                        })}
-                                                        {hiddenNotesCount > 0 && (
+                                                                return (
+                                                                    <li
+                                                                        key={
+                                                                            note.id
+                                                                        }
+                                                                        className="app-text-soft flex items-start gap-2 text-xs"
+                                                                    >
+                                                                        <span
+                                                                            className={`${noteStyles.solid} mt-1 h-2 w-2 shrink-0 rounded-full`}
+                                                                        />
+                                                                        <span className="min-w-0 truncate font-medium">
+                                                                            {
+                                                                                note.title
+                                                                            }
+                                                                        </span>
+                                                                    </li>
+                                                                );
+                                                            },
+                                                        )}
+                                                        {hiddenNotesCount >
+                                                            0 && (
                                                             <li className="app-text-subtle text-[11px] font-medium uppercase tracking-wide">
-                                                                +{hiddenNotesCount} more
+                                                                +
+                                                                {
+                                                                    hiddenNotesCount
+                                                                }{" "}
+                                                                more
                                                             </li>
                                                         )}
                                                     </ul>
