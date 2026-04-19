@@ -1,10 +1,12 @@
 import { BarChart3, LayoutGrid, StickyNote } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import ApplicationHeader, { ApplicationHeaderMenuPanel } from "@/components/ApplicationHeader";
 import Header from "@/components/Header";
 import TemplatesBar from "@/components/TemplatesBar";
 import { GridSettingsControls, GridToolbar, ScheduleGrid } from "@/components/Grid";
 import { Sidebar, type SidebarView } from "@/components/Sidebar";
+import { useScheduleContext } from "@/context/hooks";
 import {
     Dialog,
     DialogContent,
@@ -13,6 +15,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import type { ScheduleCollectionItem, ScheduleCollectionSummary } from "@/types";
 
 type LayoutMode = "mobile" | "tablet" | "desktop";
 type MobileView = "grid" | "notes" | "dashboard";
@@ -43,6 +46,7 @@ function resolveLayoutMode(width: number): LayoutMode {
 }
 
 function App() {
+    const schedule = useScheduleContext();
     const [layoutMode, setLayoutMode] = useState<LayoutMode>(() => {
         if (typeof window === "undefined") {
             return "desktop";
@@ -53,7 +57,9 @@ function App() {
     const [sidebarView, setSidebarView] = useState<SidebarView>("summary");
     const [tabletSidebarOpen, setTabletSidebarOpen] = useState(false);
     const [mobileView, setMobileView] = useState<MobileView>("grid");
+    const [mobileAppMenuOpen, setMobileAppMenuOpen] = useState(false);
     const [mobileSettingsOpen, setMobileSettingsOpen] = useState(false);
+    const [templatesVisible, setTemplatesVisible] = useState(false);
     const [isGridExpanded, setIsGridExpanded] = useState(false);
 
     useEffect(() => {
@@ -70,6 +76,7 @@ function App() {
                 }
 
                 if (nextMode !== "mobile") {
+                    setMobileAppMenuOpen(false);
                     setMobileSettingsOpen(false);
                     setMobileView("grid");
                 }
@@ -119,9 +126,25 @@ function App() {
         setIsGridExpanded((current) => !current);
     };
 
+    const toggleTemplatesVisible = () => {
+        setTemplatesVisible((current) => !current);
+    };
+
+    const activeScheduleSummary: ScheduleCollectionItem = {
+        id: schedule.id,
+        name: schedule.name,
+        templateCount: Object.keys(schedule.templates).length,
+        placedActivityCount: Object.keys(schedule.placedActivities).length,
+        noteCount: Object.keys(schedule.notes).length,
+    };
+
+    const scheduleCollectionSummary: ScheduleCollectionSummary = {
+        activeScheduleId: schedule.id,
+        schedules: [activeScheduleSummary],
+    };
+
     const plannerContent = (
         <>
-            <TemplatesBar />
             <div
                 className={cn(
                     "min-h-0 flex-1",
@@ -164,41 +187,65 @@ function App() {
         );
 
     return (
-        <div
-            className={cn(
-                "app-shell px-4 py-4 md:px-6 xl:px-8",
-                layoutMode === "mobile" &&
-                    "pb-[calc(5.5rem+env(safe-area-inset-bottom))]"
-            )}
-        >
+        <div className="app-shell">
+            <ApplicationHeader
+                layoutMode={layoutMode}
+                scheduleCollectionSummary={scheduleCollectionSummary}
+                templatesVisible={templatesVisible}
+                onToggleTemplates={toggleTemplatesVisible}
+                onOpenMobileMenu={() => {
+                    setMobileSettingsOpen(false);
+                    setMobileAppMenuOpen(true);
+                }}
+            />
+
+            {templatesVisible ? (
+                <section className="app-shell__templates px-4 py-3 md:px-6 xl:px-8">
+                    <div className="mx-auto max-w-540">
+                        <TemplatesBar
+                            id="app-templates-bar"
+                            onClose={() => setTemplatesVisible(false)}
+                        />
+                    </div>
+                </section>
+            ) : null}
+
             <div
                 className={cn(
-                    "mx-auto flex min-h-full max-w-540 gap-4 xl:gap-5",
-                    layoutMode === "desktop" ? "h-full" : "flex-col"
+                    "app-shell__content px-4 py-4 md:px-6 xl:px-8",
+                    layoutMode === "mobile" &&
+                        "pb-[calc(5.5rem+env(safe-area-inset-bottom))]"
                 )}
             >
-                <main
+                <div
                     className={cn(
-                        "flex min-w-0 flex-col gap-4",
-                        layoutMode === "desktop"
-                            ? "w-full max-w-405 flex-1"
-                            : "flex-auto"
+                        "mx-auto flex min-h-full max-w-540 gap-4 xl:gap-5",
+                        layoutMode === "desktop" ? "h-full" : "flex-col"
                     )}
                 >
-                    <Header
-                        layoutMode={layoutMode}
-                        sidebarView={sidebarView}
-                        onToggleSidebar={toggleDesktopSidebar}
-                        onOpenSidebar={() => setTabletSidebarOpen(true)}
-                    />
-                    {mainContent}
-                </main>
+                    <main
+                        className={cn(
+                            "flex min-w-0 flex-col gap-4",
+                            layoutMode === "desktop"
+                                ? "w-full max-w-405 flex-1"
+                                : "flex-auto"
+                        )}
+                    >
+                        <Header
+                            layoutMode={layoutMode}
+                            sidebarView={sidebarView}
+                            onToggleSidebar={toggleDesktopSidebar}
+                            onOpenSidebar={() => setTabletSidebarOpen(true)}
+                        />
+                        {mainContent}
+                    </main>
 
-                {layoutMode === "desktop" ? (
-                    <aside className="flex min-h-0 w-[clamp(320px,31vw,520px)] max-w-130 flex-none">
-                        <Sidebar view={sidebarView} className="w-full" />
-                    </aside>
-                ) : null}
+                    {layoutMode === "desktop" ? (
+                        <aside className="flex min-h-0 w-[clamp(320px,31vw,520px)] max-w-130 flex-none">
+                            <Sidebar view={sidebarView} className="w-full" />
+                        </aside>
+                    ) : null}
+                </div>
             </div>
 
             {layoutMode === "tablet" ? (
@@ -224,6 +271,30 @@ function App() {
 
             {layoutMode === "mobile" ? (
                 <>
+                    <Dialog
+                        open={mobileAppMenuOpen}
+                        onOpenChange={setMobileAppMenuOpen}
+                    >
+                        <DialogContent className="top-0 right-auto bottom-0 left-0 h-dvh max-h-dvh w-[min(88vw,22rem)] max-w-none translate-x-0 translate-y-0 gap-5 rounded-r-4xl rounded-l-none border-y-0 border-l-0 p-5 shadow-none sm:max-w-none sm:p-5">
+                            <DialogHeader className="gap-3 text-left!">
+                                <DialogTitle>Application menu</DialogTitle>
+                                <DialogDescription>
+                                    Access app-level controls without leaving the weekly
+                                    planner.
+                                </DialogDescription>
+                            </DialogHeader>
+
+                                <ApplicationHeaderMenuPanel
+                                    scheduleCollectionSummary={scheduleCollectionSummary}
+                                templatesVisible={templatesVisible}
+                                onToggleTemplates={() => {
+                                    toggleTemplatesVisible();
+                                    setMobileAppMenuOpen(false);
+                                }}
+                            />
+                        </DialogContent>
+                    </Dialog>
+
                     <Dialog
                         open={mobileSettingsOpen}
                         onOpenChange={setMobileSettingsOpen}

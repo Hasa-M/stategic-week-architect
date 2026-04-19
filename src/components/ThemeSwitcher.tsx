@@ -10,16 +10,27 @@ const THEME_OPTIONS: { label: string; value: ThemeMode }[] = [
 
 type ThemeSwitcherProps = {
     className?: string;
+    fill?: boolean;
+    size?: "default" | "compact";
 };
 
-export default function ThemeSwitcher({ className }: ThemeSwitcherProps) {
+export default function ThemeSwitcher({
+    className,
+    fill = false,
+    size = "default",
+}: ThemeSwitcherProps) {
     const schedule = useScheduleContext();
     const dispatch = useDispatch();
+    const isCompact = size === "compact";
 
     return (
         <div
             className={cn(
-                "app-segmented-control inline-flex w-full min-w-0 rounded-full border p-1 sm:w-auto",
+                "app-segmented-control min-w-0 items-center rounded-full border sm:h-auto",
+                fill ? "flex w-full" : "inline-flex w-fit max-w-full",
+                isCompact
+                    ? "h-8 p-0.5"
+                    : "p-1",
                 className
             )}
             role="group"
@@ -33,7 +44,11 @@ export default function ThemeSwitcher({ className }: ThemeSwitcherProps) {
                         key={option.value}
                         type="button"
                         className={cn(
-                            "app-segmented-control__button rounded-full px-3.5 py-2 text-sm font-semibold transition-all",
+                            "app-segmented-control__button inline-flex min-w-0 items-center justify-center whitespace-nowrap rounded-full font-semibold transition-all",
+                            fill ? "flex-1 basis-0" : "flex-none w-fit",
+                            isCompact
+                                ? "h-7 px-2.5 text-[11px]"
+                                : "px-3.5 py-2 text-sm",
                             isActive && "app-segmented-control__button--active"
                         )}
                         onClick={() =>
