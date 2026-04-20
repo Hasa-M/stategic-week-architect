@@ -50,6 +50,9 @@ The main application state lives in the context and reducer layer:
 
 This is the current intended ownership model:
 
+- `User` is the persisted root state for the frontend.
+- `theme`, shared `templates`, `activeScheduleId`, and the `schedules` collection live at user level.
+- `ScheduleState` now owns only schedule-specific data such as name, grid settings, placed activities, and notes.
 - The reducer owns state transitions.
 - The provider owns persistence lifecycle.
 - UI components dispatch actions and render state.
@@ -65,6 +68,7 @@ The main types are defined in [src/types.ts](../src/types.ts).
 
 Important concepts:
 
+- `User` is the frontend-safe root model with shared templates and multiple schedules.
 - `Activity` is the template-level concept.
 - `PlacedActivity` is a scheduled instance on a day and time range.
 - `Note` is sidebar content associated with a placed activity through `activityId`.

@@ -1,6 +1,6 @@
 # Strategic Weekly Architect
 
-A weekly schedule planning application designed to help users organize activities with a focus on strategic time management. Create reusable activity templates, place them on a visual weekly grid, and manage activity-linked notes — all with a modern, type-safe React architecture.
+A weekly schedule planning application designed to help users organize activities with a focus on strategic time management. Create reusable activity templates, share them across schedules, place them on a visual weekly grid, and manage activity-linked notes — all with a modern, type-safe React architecture.
 
 ## Features
 
@@ -56,14 +56,25 @@ The backend will use NestJS for the API layer. WASM modules written in C will ha
 
 ## State Management
 
-The app uses React Context + useReducer for centralized state management (type-first development approach):
+The app uses React Context + useReducer for centralized state management (type-first development approach). The persisted root state is a frontend-safe `User` model that owns shared templates, the active schedule id, and the schedules collection:
 
 ```typescript
+type User = {
+    id: string;
+    displayName: string;
+    theme: ThemeMode;
+    activeScheduleId: string;
+    templates: Record<string, Activity>;
+    schedules: Record<string, ScheduleState>;
+};
+
 // Reducer actions
 type ScheduleAction =
     | { type: "ADD_TEMPLATE"; payload: ActivityDraft }
     | { type: "EDIT_TEMPLATE"; payload: { activity: Activity; toPropagate: boolean } }
     | { type: "DELETE_TEMPLATE"; payload: string }
+    | { type: "CREATE_SCHEDULE"; payload?: { name?: string } }
+    | { type: "SET_ACTIVE_SCHEDULE"; payload: string }
     | { type: "PLACE_ACTIVITY"; payload: PlacedActivityDraft }
     | { type: "ADD_NOTE"; payload: NoteDraft }
     // ... more actions

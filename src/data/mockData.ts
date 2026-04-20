@@ -1,10 +1,11 @@
 import {
     DEFAULT_THEME_MODE,
-    type ScheduleState,
     type Activity,
-    type PlacedActivity,
-    type Note,
     type DaysGrid,
+    type Note,
+    type PlacedActivity,
+    type ScheduleState,
+    type User,
 } from "../types";
 
 // ---------------------------------------------------------------------------
@@ -145,14 +146,27 @@ const MOCK_NOTES_DATA: Record<string, Note> = {
 };
 
 // ---------------------------------------------------------------------------
-// FINAL EXPORT (Matches ScheduleState)
+// 5. SCHEDULE STATE
 // ---------------------------------------------------------------------------
-export const INITIAL_SCHEDULE_STATE: ScheduleState = {
+const INITIAL_SCHEDULE_STATE: ScheduleState = {
     id: "sched_1",
     name: "My Weekly Plan",
-    theme: DEFAULT_THEME_MODE,
     grid: MOCK_GRID,
-    templates: MOCK_TEMPLATES,
     placedActivities: MOCK_PLACED,
     notes: MOCK_NOTES_DATA,
+};
+
+// ---------------------------------------------------------------------------
+// 6. USER STATE
+// ---------------------------------------------------------------------------
+export const INITIAL_USER_STATE: User = {
+    id: "user_local",
+    displayName: "Local Planner",
+    email: "planner@local.test",
+    theme: DEFAULT_THEME_MODE,
+    activeScheduleId: INITIAL_SCHEDULE_STATE.id,
+    templates: MOCK_TEMPLATES,
+    schedules: {
+        [INITIAL_SCHEDULE_STATE.id]: INITIAL_SCHEDULE_STATE,
+    },
 };

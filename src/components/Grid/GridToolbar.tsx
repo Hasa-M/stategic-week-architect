@@ -4,7 +4,7 @@ import { useMemo, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { useDispatch, useScheduleContext } from "@/context/hooks";
+import { useDispatch, useScheduleContext, useUserContext } from "@/context/hooks";
 import {
     ALL_DAYS,
     GRID_HOUR_OPTIONS,
@@ -51,16 +51,17 @@ function formatMinutes(minutes: number) {
 
 function AddActivityAction({ className }: { className?: string }) {
     const schedule = useScheduleContext();
+    const user = useUserContext();
     const dispatch = useDispatch();
 
     const templateOptions = useMemo(
         () =>
-            Object.values(schedule.templates).map((template) => ({
+            Object.values(user.templates).map((template) => ({
                 value: template.templateId,
                 label: template.title,
                 color: template.color,
             })),
-        [schedule.templates]
+        [user.templates]
     );
 
     const timeOptions = useMemo(() => {

@@ -109,17 +109,36 @@ export type ScheduleCollectionSummary = {
 export type ScheduleState = {
     id: string;
     name: string;
-    theme: ThemeMode;
-    templates: Record<string, Activity>;
     placedActivities: Record<string, PlacedActivity>;
     grid: DaysGrid;
     notes: Record<string, Note>;
 };
 
+export type UserProfile = {
+    id: string;
+    displayName: string;
+    email?: string;
+    avatarUrl?: string;
+};
+
+export type User = UserProfile & {
+    theme: ThemeMode;
+    activeScheduleId: string;
+    templates: Record<string, Activity>;
+    schedules: Record<string, ScheduleState>;
+};
+
+export type CreateSchedulePayload = {
+    name?: string;
+};
+
 export type ScheduleAction =
-    | { type: "LOAD_STATE"; payload: ScheduleState }
+    | { type: "LOAD_STATE"; payload: User }
     | { type: "SET_NAME"; payload: string }
     | { type: "SET_THEME"; payload: ThemeMode }
+    | { type: "CREATE_SCHEDULE"; payload?: CreateSchedulePayload }
+    | { type: "SET_ACTIVE_SCHEDULE"; payload: string }
+    | { type: "DELETE_SCHEDULE"; payload: string }
     | { type: "ADD_TEMPLATE"; payload: ActivityDraft }
     | {
           type: "EDIT_TEMPLATE";

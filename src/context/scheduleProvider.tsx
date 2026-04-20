@@ -1,13 +1,17 @@
-import { useEffect, useReducer, type ReactNode } from "react";
+import { useEffect, useMemo, useReducer, type ReactNode } from "react";
 import { scheduleReducer } from "./scheduleReducer"; // put initialState import there
-import { ScheduleContext, ScheduleDispatchContext } from "./scheduleContext";
+import {
+    ScheduleContext,
+    ScheduleDispatchContext,
+    UserContext,
+} from "./scheduleContext";
 import { storageService } from "@/services/storageService";
-import type { ScheduleState } from "@/types";
+import type { ScheduleState, User } from "@/types";
 
 //after to change with the real inizial schedule
-import { INITIAL_SCHEDULE_STATE as initialState } from "@/data/mockData";
+import { INITIAL_USER_STATE as initialState } from "@/data/mockData";
 
-const init = (defaultState: ScheduleState): ScheduleState => {
+const init = (defaultState: User): User => {
     const savedState = storageService.loadState();
     return savedState ?? defaultState;
 };
@@ -17,15 +21,22 @@ export default function ScheduleProvider({
 }: {
     children: ReactNode;
 }) {
-    const [scheduleState, dispatch] = useReducer(
+    const [userState, dispatch] = useReducer(
         scheduleReducer,
         initialState,
         init
     );
+    const activeSchedule = useMemo<ScheduleState>(() => {
+        return (
+            userState.schedules[userState.activeScheduleId] ??
+            Object.values(userState.schedules)[0] ??
+            initialState.schedules[initialState.activeScheduleId]
+        );
+    }, [userState]);
 
     useEffect(() => {
-        storageService.saveState(scheduleState);
-    }, [scheduleState]);
+        storageService.saveState(userState);
+    }, [userState]);
 
     useEffect(() => {
         if (typeof document === "undefined") {
@@ -33,16 +44,18 @@ export default function ScheduleProvider({
         }
 
         const root = document.documentElement;
-        root.dataset.theme = scheduleState.theme;
+        root.dataset.theme = userState.theme;
         root.style.colorScheme =
-            scheduleState.theme === "dark" ? "dark" : "light";
-    }, [scheduleState.theme]);
+            userState.theme === "dark" ? "dark" : "light";
+    }, [userState.theme]);
 
     return (
-        <ScheduleContext.Provider value={scheduleState}>
-            <ScheduleDispatchContext.Provider value={dispatch}>
-                {children}
-            </ScheduleDispatchContext.Provider>
-        </ScheduleContext.Provider>
+        <UserContext.Provider value={userState}>
+            <ScheduleContext.Provider value={activeSchedule}>
+                <ScheduleDispatchContext.Provider value={dispatch}>
+                    {children}
+                </ScheduleDispatchContext.Provider>
+            </ScheduleContext.Provider>
+        </UserContext.Provider>
     );
 }

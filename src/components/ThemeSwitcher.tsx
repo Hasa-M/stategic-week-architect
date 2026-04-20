@@ -1,4 +1,4 @@
-import { useDispatch, useScheduleContext } from "@/context/hooks";
+import { useDispatch, useUserContext } from "@/context/hooks";
 import { cn } from "@/lib/utils";
 import type { ThemeMode } from "@/types";
 
@@ -19,7 +19,7 @@ export default function ThemeSwitcher({
     fill = false,
     size = "default",
 }: ThemeSwitcherProps) {
-    const schedule = useScheduleContext();
+    const user = useUserContext();
     const dispatch = useDispatch();
     const isCompact = size === "compact";
 
@@ -37,7 +37,7 @@ export default function ThemeSwitcher({
             aria-label="Theme switcher"
         >
             {THEME_OPTIONS.map((option) => {
-                const isActive = schedule.theme === option.value;
+                const isActive = user.theme === option.value;
 
                 return (
                     <button

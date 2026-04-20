@@ -1,5 +1,9 @@
 import { useContext } from "react";
-import { ScheduleContext, ScheduleDispatchContext } from "./scheduleContext";
+import {
+    ScheduleContext,
+    ScheduleDispatchContext,
+    UserContext,
+} from "./scheduleContext";
 
 export const useDispatch = () => {
     const context = useContext(ScheduleDispatchContext);
@@ -16,6 +20,16 @@ export const useScheduleContext = () => {
     if (!context) {
         throw new Error(
             "useScheduleContext must be used within a ScheduleContext provider"
+        );
+    }
+    return context;
+};
+
+export const useUserContext = () => {
+    const context = useContext(UserContext);
+    if (!context) {
+        throw new Error(
+            "useUserContext must be used within a UserContext provider"
         );
     }
     return context;

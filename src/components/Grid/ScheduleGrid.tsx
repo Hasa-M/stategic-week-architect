@@ -8,7 +8,7 @@ import {
     type PointerEvent as ReactPointerEvent,
 } from "react";
 
-import { useDispatch, useScheduleContext } from "@/context/hooks";
+import { useDispatch, useScheduleContext, useUserContext } from "@/context/hooks";
 import { EditPlacedActivityModal } from "@/components/Grid/PlaceActivityModal";
 import {
     clipActivityToVisibleRange,
@@ -211,6 +211,7 @@ function buildDayOverlapLayout(dayActivities: VisiblePlacedActivity[]) {
 
 export default function ScheduleGrid() {
     const schedule = useScheduleContext();
+    const user = useUserContext();
     const dispatch = useDispatch();
     const { days, slotDuration, startTime, endTime } = schedule.grid;
     const dayColumnRefs = useRef<Partial<Record<Day, HTMLDivElement | null>>>(
@@ -246,12 +247,12 @@ export default function ScheduleGrid() {
 
     const templateOptions = useMemo(
         () =>
-            Object.values(schedule.templates).map((template) => ({
+            Object.values(user.templates).map((template) => ({
                 value: template.templateId,
                 label: template.title,
                 color: template.color,
             })),
-        [schedule.templates],
+        [user.templates],
     );
 
     const timeOptions = useMemo(() => {

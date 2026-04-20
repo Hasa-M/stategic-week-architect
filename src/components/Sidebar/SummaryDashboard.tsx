@@ -9,11 +9,12 @@ import { useMemo } from "react";
 
 import SidebarSectionHeader from "@/components/Sidebar/SidebarSectionHeader";
 import { Button } from "@/components/ui/button";
-import { useScheduleContext } from "@/context/hooks";
+import { useScheduleContext, useUserContext } from "@/context/hooks";
 import { clipActivityToVisibleRange } from "@/lib/grid";
 
 export default function SummaryDashboard() {
     const schedule = useScheduleContext();
+    const user = useUserContext();
     const visibleDays = schedule.grid.days;
     const visibleActivities = useMemo(
         () =>
@@ -56,7 +57,7 @@ export default function SummaryDashboard() {
             (current, next) => (next.hours > current.hours ? next : current),
             { day: visibleDays[0] ?? "Monday", hours: 0 }
         ) ?? null;
-    const recentTemplates = Object.values(schedule.templates).slice(0, 4);
+    const recentTemplates = Object.values(user.templates).slice(0, 4);
     const visibleSummary = `${visibleActivities.length} visible activit${visibleActivities.length === 1 ? "y" : "ies"} across ${visibleDays.length} visible day${visibleDays.length === 1 ? "" : "s"}.`;
 
     return (
@@ -100,7 +101,7 @@ export default function SummaryDashboard() {
                         Templates
                     </div>
                     <p className="app-text-strong mt-2 text-2xl font-semibold">
-                        {Object.keys(schedule.templates).length}
+                        {Object.keys(user.templates).length}
                     </p>
                 </div>
 

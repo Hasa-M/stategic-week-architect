@@ -6,7 +6,7 @@ import Header from "@/components/Header";
 import TemplatesBar from "@/components/TemplatesBar";
 import { GridSettingsControls, GridToolbar, ScheduleGrid } from "@/components/Grid";
 import { Sidebar, type SidebarView } from "@/components/Sidebar";
-import { useScheduleContext } from "@/context/hooks";
+import { useUserContext } from "@/context/hooks";
 import {
     Dialog,
     DialogContent,
@@ -46,7 +46,7 @@ function resolveLayoutMode(width: number): LayoutMode {
 }
 
 function App() {
-    const schedule = useScheduleContext();
+    const user = useUserContext();
     const [layoutMode, setLayoutMode] = useState<LayoutMode>(() => {
         if (typeof window === "undefined") {
             return "desktop";
@@ -130,17 +130,18 @@ function App() {
         setTemplatesVisible((current) => !current);
     };
 
-    const activeScheduleSummary: ScheduleCollectionItem = {
-        id: schedule.id,
-        name: schedule.name,
-        templateCount: Object.keys(schedule.templates).length,
-        placedActivityCount: Object.keys(schedule.placedActivities).length,
-        noteCount: Object.keys(schedule.notes).length,
-    };
-
     const scheduleCollectionSummary: ScheduleCollectionSummary = {
-        activeScheduleId: schedule.id,
-        schedules: [activeScheduleSummary],
+        activeScheduleId: user.activeScheduleId,
+        schedules: Object.values(user.schedules).map<ScheduleCollectionItem>(
+            (userSchedule) => ({
+                id: userSchedule.id,
+                name: userSchedule.name,
+                templateCount: Object.keys(user.templates).length,
+                placedActivityCount: Object.keys(userSchedule.placedActivities)
+                    .length,
+                noteCount: Object.keys(userSchedule.notes).length,
+            })
+        ),
     };
 
     const plannerContent = (

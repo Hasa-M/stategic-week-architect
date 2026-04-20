@@ -6,7 +6,7 @@ import TemplateCard from "./Card/TemplateCard";
 import { FormModal } from "./Forms/FormModal";
 import type { Activity, ActivityDraft } from "@/types";
 import { activityFields } from "@/fieldConfigs";
-import { useDispatch, useScheduleContext } from "@/context/hooks";
+import { useDispatch, useUserContext } from "@/context/hooks";
 import { cn } from "@/lib/utils";
 
 type TemplatesBarProps = {
@@ -20,12 +20,12 @@ export default function TemplatesBar({
     id,
     onClose,
 }: TemplatesBarProps) {
-    const schedule = useScheduleContext();
+    const user = useUserContext();
     const dispatch = useDispatch();
 
     const templateList = useMemo(() => {
-        return Object.values(schedule?.templates ?? {});
-    }, [schedule?.templates]);
+        return Object.values(user.templates);
+    }, [user.templates]);
 
     const handleEditTemplate = useCallback(
         (data: Activity & { toPropagate?: boolean }) => {

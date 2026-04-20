@@ -5,7 +5,6 @@ import {
     normalizeGridSettings,
 } from "@/lib/grid";
 import {
-    DEFAULT_THEME_MODE,
     type Activity,
     type ActivityNoteDraft,
     type ActivityNoteInput,
@@ -13,54 +12,446 @@ import {
     type Note,
     type ScheduleAction,
     type ScheduleState,
+    type User,
 } from "@/types";
 
-export const initialState: ScheduleState = {
-    id: crypto.randomUUID(),
-    name: "My Weekly Schedule",
-    theme: DEFAULT_THEME_MODE,
-    templates: {},
-    placedActivities: {},
-    grid: {
-        days: [
-            "Monday",
-            "Tuesday",
-            "Wednesday",
-            "Thursday",
-            "Friday",
-            "Saturday",
-            "Sunday",
-        ],
-        slotDuration: DEFAULT_GRID_SLOT_DURATION,
-        startTime: DEFAULT_GRID_START_TIME,
-        endTime: DEFAULT_GRID_END_TIME,
-    },
-    notes: {},
-};
+const DEFAULT_SCHEDULE_NAME = "My Weekly Schedule";
 
-export function scheduleReducer(
-    state: ScheduleState,
-    action: ScheduleAction
+function createScheduleState(
+    overrides: Partial<Pick<ScheduleState, "id" | "name">> = {},
+): ScheduleState {
+    return {
+        id: overrides.id ?? crypto.randomUUID(),
+        name: overrides.name?.trim() || DEFAULT_SCHEDULE_NAME,
+        placedActivities: {},
+        grid: {
+            days: [
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday",
+                "Sunday",
+            ],
+            slotDuration: DEFAULT_GRID_SLOT_DURATION,
+            startTime: DEFAULT_GRID_START_TIME,
+            endTime: DEFAULT_GRID_END_TIME,
+        },
+        notes: {},
+    };
+}
+
+function ensureUserState(state: User): User {
+    const scheduleIds = Object.keys(state.schedules);
+
+    if (scheduleIds.length === 0) {
+        const fallbackSchedule = createScheduleState();
+
+        return {
+            ...state,
+            activeScheduleId: fallbackSchedule.id,
+            schedules: {
+                [fallbackSchedule.id]: fallbackSchedule,
+            },
+        };
+    }
+
+    if (state.schedules[state.activeScheduleId]) {
+        return state;
+    }
+
+    return {
+        ...state,
+        activeScheduleId: scheduleIds[0],
+    };
+}
+
+function resolveActiveScheduleId(state: User): string | null {
+    if (state.schedules[state.activeScheduleId]) {
+        return state.activeScheduleId;
+    }
+
+    return Object.keys(state.schedules)[0] ?? null;
+}
+
+function updateActiveSchedule(
+    state: User,
+    updateSchedule: (schedule: ScheduleState) => ScheduleState,
+): User {
+    const activeScheduleId = resolveActiveScheduleId(state);
+
+    if (!activeScheduleId) {
+        const fallbackState = ensureUserState(state);
+        const fallbackActiveScheduleId = resolveActiveScheduleId(fallbackState);
+
+        if (!fallbackActiveScheduleId) {
+            return fallbackState;
+        }
+
+        return updateActiveSchedule(fallbackState, updateSchedule);
+    }
+
+    const activeSchedule = state.schedules[activeScheduleId];
+    const nextSchedule = updateSchedule(activeSchedule);
+
+    if (
+        nextSchedule === activeSchedule &&
+        activeScheduleId === state.activeScheduleId
+    ) {
+        return state;
+    }
+
+    return {
+        ...state,
+        activeScheduleId,
+        schedules: {
+            ...state.schedules,
+            [activeScheduleId]: nextSchedule,
+        },
+    };
+}
+
+function mapSchedules(
+    schedules: Record<string, ScheduleState>,
+    updateSchedule: (schedule: ScheduleState) => ScheduleState,
+): Record<string, ScheduleState> {
+    let hasChanges = false;
+
+    const nextEntries = Object.entries(schedules).map(([scheduleId, schedule]) => {
+        const nextSchedule = updateSchedule(schedule);
+
+        if (nextSchedule !== schedule) {
+            hasChanges = true;
+        }
+
+        return [scheduleId, nextSchedule] as const;
+    });
+
+    if (!hasChanges) {
+        return schedules;
+    }
+
+    return Object.fromEntries(nextEntries);
+}
+
+function reduceScheduleState(
+    schedule: ScheduleState,
+    action: ScheduleAction,
+    templates: Record<string, Activity>,
 ): ScheduleState {
     switch (action.type) {
-        case "LOAD_STATE":
-            return {
-                ...action.payload,
-                theme: action.payload.theme ?? DEFAULT_THEME_MODE,
-                grid: normalizeGridSettings(action.payload.grid),
-            };
-
         case "SET_NAME":
             return {
-                ...state,
+                ...schedule,
                 name: action.payload,
             };
+
+        case "PLACE_ACTIVITY": {
+            const template = templates[action.payload.templateId];
+
+            if (!template) {
+                return schedule;
+            }
+
+            const { notes: noteDrafts, ...placedActivityDraft } = action.payload;
+            const placedId = crypto.randomUUID();
+            const nextNotes = buildAssociatedNotes(noteDrafts, placedId);
+
+            return {
+                ...schedule,
+                placedActivities: {
+                    ...schedule.placedActivities,
+                    [placedId]: {
+                        ...placedActivityDraft,
+                        placedId,
+                        title: template.title,
+                        description: template.description,
+                        color: template.color,
+                        subfactors: template.subfactors,
+                    },
+                },
+                notes: {
+                    ...schedule.notes,
+                    ...nextNotes,
+                },
+            };
+        }
+
+        case "EDIT_PLACED_ACTIVITY": {
+            const template = templates[action.payload.templateId];
+
+            if (!template) {
+                return schedule;
+            }
+
+            return {
+                ...schedule,
+                placedActivities: {
+                    ...schedule.placedActivities,
+                    [action.payload.placedId]: {
+                        ...action.payload,
+                        title: template.title,
+                        description: template.description,
+                        color: template.color,
+                        subfactors: template.subfactors,
+                    },
+                },
+            };
+        }
+
+        case "SAVE_PLACED_ACTIVITY": {
+            const template = templates[action.payload.templateId];
+            const existingActivity =
+                schedule.placedActivities[action.payload.placedId];
+
+            if (!template || !existingActivity) {
+                return schedule;
+            }
+
+            const { notes, ...placedActivityUpdate } = action.payload;
+
+            return {
+                ...schedule,
+                placedActivities: {
+                    ...schedule.placedActivities,
+                    [action.payload.placedId]: {
+                        ...placedActivityUpdate,
+                        title: template.title,
+                        description: template.description,
+                        color: template.color,
+                        subfactors: template.subfactors,
+                    },
+                },
+                notes: syncActivityNotes(
+                    schedule.notes,
+                    action.payload.placedId,
+                    notes,
+                ),
+            };
+        }
+
+        case "REMOVE_PLACED_ACTIVITY":
+            return {
+                ...schedule,
+                placedActivities: Object.fromEntries(
+                    Object.entries(schedule.placedActivities).filter(
+                        ([id]) => id !== action.payload,
+                    ),
+                ),
+                notes: filterNotesByActivityIds(
+                    schedule.notes,
+                    new Set([action.payload]),
+                ),
+            };
+
+        case "SET_GRID_DAYS":
+            return {
+                ...schedule,
+                grid: normalizeGridSettings({
+                    ...schedule.grid,
+                    days: action.payload,
+                }),
+            };
+
+        case "SET_GRID_SLOT_DURATION":
+            return {
+                ...schedule,
+                grid: normalizeGridSettings({
+                    ...schedule.grid,
+                    slotDuration: action.payload,
+                }),
+            };
+
+        case "SET_GRID_TIME_RANGE":
+            return {
+                ...schedule,
+                grid: normalizeGridSettings({
+                    ...schedule.grid,
+                    ...action.payload,
+                }),
+            };
+
+        case "ADD_NOTE": {
+            if (!schedule.placedActivities[action.payload.activityId]) {
+                return schedule;
+            }
+
+            const id = crypto.randomUUID();
+
+            return {
+                ...schedule,
+                notes: {
+                    ...schedule.notes,
+                    [id]: {
+                        id,
+                        ...action.payload,
+                    },
+                },
+            };
+        }
+
+        case "EDIT_NOTE":
+            if (
+                !schedule.notes[action.payload.id] ||
+                !schedule.placedActivities[action.payload.activityId]
+            ) {
+                return schedule;
+            }
+
+            return {
+                ...schedule,
+                notes: {
+                    ...schedule.notes,
+                    [action.payload.id]: action.payload,
+                },
+            };
+
+        case "REMOVE_NOTE":
+            return {
+                ...schedule,
+                notes: Object.fromEntries(
+                    Object.entries(schedule.notes).filter(
+                        ([id]) => id !== action.payload,
+                    ),
+                ),
+            };
+
+        default:
+            return schedule;
+    }
+}
+
+function applyPropagatedActivityChanges(
+    schedule: ScheduleState,
+    templateId: string,
+    propagatedChanges: Partial<ActivitySnapshot>,
+): ScheduleState {
+    if (Object.keys(propagatedChanges).length === 0) {
+        return schedule;
+    }
+
+    let hasChanges = false;
+
+    const nextPlacedActivities = Object.fromEntries(
+        Object.entries(schedule.placedActivities).map(([placedId, activity]) => {
+            if (activity.templateId !== templateId) {
+                return [placedId, activity];
+            }
+
+            hasChanges = true;
+
+            return [
+                placedId,
+                {
+                    ...activity,
+                    ...propagatedChanges,
+                },
+            ];
+        }),
+    );
+
+    if (!hasChanges) {
+        return schedule;
+    }
+
+    return {
+        ...schedule,
+        placedActivities: nextPlacedActivities,
+    };
+}
+
+function removeTemplateFromSchedule(
+    schedule: ScheduleState,
+    templateId: string,
+): ScheduleState {
+    const removedPlacedIds = new Set(
+        Object.values(schedule.placedActivities)
+            .filter((activity) => activity.templateId === templateId)
+            .map((activity) => activity.placedId),
+    );
+
+    if (removedPlacedIds.size === 0) {
+        return schedule;
+    }
+
+    return {
+        ...schedule,
+        placedActivities: Object.fromEntries(
+            Object.entries(schedule.placedActivities).filter(
+                ([, activity]) => activity.templateId !== templateId,
+            ),
+        ),
+        notes: filterNotesByActivityIds(schedule.notes, removedPlacedIds),
+    };
+}
+
+export function scheduleReducer(state: User, action: ScheduleAction): User {
+    switch (action.type) {
+        case "LOAD_STATE":
+            return ensureUserState(action.payload);
 
         case "SET_THEME":
             return {
                 ...state,
                 theme: action.payload,
             };
+
+        case "CREATE_SCHEDULE": {
+            const nextSchedule = createScheduleState({
+                name: action.payload?.name,
+            });
+
+            return {
+                ...state,
+                activeScheduleId: nextSchedule.id,
+                schedules: {
+                    ...state.schedules,
+                    [nextSchedule.id]: nextSchedule,
+                },
+            };
+        }
+
+        case "SET_ACTIVE_SCHEDULE":
+            if (!state.schedules[action.payload]) {
+                return state;
+            }
+
+            return {
+                ...state,
+                activeScheduleId: action.payload,
+            };
+
+        case "DELETE_SCHEDULE": {
+            if (!state.schedules[action.payload]) {
+                return state;
+            }
+
+            const nextSchedules = Object.fromEntries(
+                Object.entries(state.schedules).filter(
+                    ([scheduleId]) => scheduleId !== action.payload,
+                ),
+            );
+
+            if (Object.keys(nextSchedules).length === 0) {
+                const fallbackState = ensureUserState({
+                    ...state,
+                    activeScheduleId: "",
+                    schedules: {},
+                });
+
+                return fallbackState;
+            }
+
+            return {
+                ...state,
+                activeScheduleId:
+                    state.activeScheduleId === action.payload
+                        ? Object.keys(nextSchedules)[0]
+                        : state.activeScheduleId,
+                schedules: nextSchedules,
+            };
+        }
 
         case "ADD_TEMPLATE": {
             const templateId = crypto.randomUUID();
@@ -88,7 +479,14 @@ export function scheduleReducer(
             const propagatedChanges = getPropagatedActivityChanges(
                 action.payload.activity,
                 existingTemplate,
-                action.payload.toPropagate
+                action.payload.toPropagate,
+            );
+            const nextSchedules = mapSchedules(state.schedules, (schedule) =>
+                applyPropagatedActivityChanges(
+                    schedule,
+                    templateId,
+                    propagatedChanges,
+                ),
             );
 
             return {
@@ -97,214 +495,42 @@ export function scheduleReducer(
                     ...state.templates,
                     [templateId]: action.payload.activity,
                 },
-                ...(Object.keys(propagatedChanges).length > 0 && {
-                    placedActivities: Object.fromEntries(
-                        Object.entries(state.placedActivities).map(
-                            ([id, content]) => [
-                                id,
-                                content.templateId === templateId
-                                    ? { ...content, ...propagatedChanges }
-                                    : content,
-                            ]
-                        )
-                    ),
-                }),
+                schedules: nextSchedules,
             };
         }
 
         case "DELETE_TEMPLATE": {
-            const templateId = action.payload;
-            const removedPlacedIds = new Set(
-                Object.values(state.placedActivities)
-                    .filter((content) => content.templateId === templateId)
-                    .map((content) => content.placedId)
-            );
-            const others = Object.fromEntries(
-                Object.entries(state.templates).filter(
-                    ([id]) => id !== templateId
-                )
-            );
+            if (!state.templates[action.payload]) {
+                return state;
+            }
 
             return {
                 ...state,
-                templates: others,
-                placedActivities: Object.fromEntries(
-                    Object.entries(state.placedActivities).filter(
-                        ([, content]) => content.templateId !== templateId
-                    )
+                templates: Object.fromEntries(
+                    Object.entries(state.templates).filter(
+                        ([templateId]) => templateId !== action.payload,
+                    ),
                 ),
-                notes: filterNotesByActivityIds(state.notes, removedPlacedIds),
-            };
-        }
-
-        case "PLACE_ACTIVITY": {
-            const template = state.templates[action.payload.templateId];
-
-            if (!template) {
-                return state;
-            }
-
-            const { notes: noteDrafts, ...placedActivityDraft } = action.payload;
-            const placedId = crypto.randomUUID();
-            const nextNotes = buildAssociatedNotes(noteDrafts, placedId);
-
-            return {
-                ...state,
-                placedActivities: {
-                    ...state.placedActivities,
-                    [placedId]: {
-                        ...placedActivityDraft,
-                        placedId,
-                        title: template.title,
-                        description: template.description,
-                        color: template.color,
-                        subfactors: template.subfactors,
-                    },
-                },
-                notes: {
-                    ...state.notes,
-                    ...nextNotes,
-                },
-            };
-        }
-
-        case "EDIT_PLACED_ACTIVITY": {
-            const template = state.templates[action.payload.templateId];
-
-            if (!template) {
-                return state;
-            }
-
-            return {
-                ...state,
-                placedActivities: {
-                    ...state.placedActivities,
-                    [action.payload.placedId]: {
-                        ...action.payload,
-                        title: template.title,
-                        description: template.description,
-                        color: template.color,
-                        subfactors: template.subfactors,
-                    },
-                },
-            };
-        }
-
-        case "SAVE_PLACED_ACTIVITY": {
-            const template = state.templates[action.payload.templateId];
-            const existingActivity = state.placedActivities[action.payload.placedId];
-
-            if (!template || !existingActivity) {
-                return state;
-            }
-
-            const { notes, ...placedActivityUpdate } = action.payload;
-
-            return {
-                ...state,
-                placedActivities: {
-                    ...state.placedActivities,
-                    [action.payload.placedId]: {
-                        ...placedActivityUpdate,
-                        title: template.title,
-                        description: template.description,
-                        color: template.color,
-                        subfactors: template.subfactors,
-                    },
-                },
-                notes: syncActivityNotes(
-                    state.notes,
-                    action.payload.placedId,
-                    notes
+                schedules: mapSchedules(state.schedules, (schedule) =>
+                    removeTemplateFromSchedule(schedule, action.payload),
                 ),
             };
         }
 
+        case "SET_NAME":
+        case "PLACE_ACTIVITY":
+        case "EDIT_PLACED_ACTIVITY":
+        case "SAVE_PLACED_ACTIVITY":
         case "REMOVE_PLACED_ACTIVITY":
-            return {
-                ...state,
-                placedActivities: Object.fromEntries(
-                    Object.entries(state.placedActivities).filter(
-                        ([id]) => id !== action.payload
-                    )
-                ),
-                notes: filterNotesByActivityIds(
-                    state.notes,
-                    new Set([action.payload])
-                ),
-            };
-
         case "SET_GRID_DAYS":
-            return {
-                ...state,
-                grid: normalizeGridSettings({
-                    ...state.grid,
-                    days: action.payload,
-                }),
-            };
-
         case "SET_GRID_SLOT_DURATION":
-            return {
-                ...state,
-                grid: normalizeGridSettings({
-                    ...state.grid,
-                    slotDuration: action.payload,
-                }),
-            };
-
         case "SET_GRID_TIME_RANGE":
-            return {
-                ...state,
-                grid: normalizeGridSettings({
-                    ...state.grid,
-                    ...action.payload,
-                }),
-            };
-
-        case "ADD_NOTE": {
-            if (!state.placedActivities[action.payload.activityId]) {
-                return state;
-            }
-
-            const id = crypto.randomUUID();
-
-            return {
-                ...state,
-                notes: {
-                    ...state.notes,
-                    [id]: {
-                        id,
-                        ...action.payload,
-                    },
-                },
-            };
-        }
-
+        case "ADD_NOTE":
         case "EDIT_NOTE":
-            if (
-                !state.notes[action.payload.id] ||
-                !state.placedActivities[action.payload.activityId]
-            ) {
-                return state;
-            }
-
-            return {
-                ...state,
-                notes: {
-                    ...state.notes,
-                    [action.payload.id]: action.payload,
-                },
-            };
-
         case "REMOVE_NOTE":
-            return {
-                ...state,
-                notes: Object.fromEntries(
-                    Object.entries(state.notes).filter(
-                        ([id]) => id !== action.payload
-                    )
-                ),
-            };
+            return updateActiveSchedule(state, (schedule) =>
+                reduceScheduleState(schedule, action, state.templates),
+            );
 
         default:
             return state;
@@ -314,7 +540,7 @@ export function scheduleReducer(
 function getPropagatedActivityChanges(
     activityNew: Activity,
     activityOld: Activity,
-    toPropagate: boolean
+    toPropagate: boolean,
 ): Partial<ActivitySnapshot> {
     const changes: Partial<ActivitySnapshot> = {};
 
@@ -346,7 +572,7 @@ function getPropagatedActivityChanges(
 
 function buildAssociatedNotes(
     noteDrafts: ActivityNoteDraft[] | undefined,
-    activityId: string
+    activityId: string,
 ): Record<string, Note> {
     if (!noteDrafts?.length) {
         return {};
@@ -364,33 +590,31 @@ function buildAssociatedNotes(
                     ...noteDraft,
                 },
             ];
-        })
+        }),
     );
 }
 
 function filterNotesByActivityIds(
     notes: Record<string, Note>,
-    activityIds: Set<string>
+    activityIds: Set<string>,
 ): Record<string, Note> {
     if (activityIds.size === 0) {
         return notes;
     }
 
     return Object.fromEntries(
-        Object.entries(notes).filter(
-            ([, note]) => !activityIds.has(note.activityId)
-        )
+        Object.entries(notes).filter(([, note]) => !activityIds.has(note.activityId)),
     );
 }
 
 function syncActivityNotes(
     notes: Record<string, Note>,
     activityId: string,
-    noteInputs: ActivityNoteInput[]
+    noteInputs: ActivityNoteInput[],
 ): Record<string, Note> {
     const notesWithoutActivity = filterNotesByActivityIds(
         notes,
-        new Set([activityId])
+        new Set([activityId]),
     );
 
     const nextActivityNotes = Object.fromEntries(
@@ -410,7 +634,7 @@ function syncActivityNotes(
                     color: noteInput.color,
                 },
             ];
-        })
+        }),
     );
 
     return {
