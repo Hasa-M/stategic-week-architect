@@ -28,6 +28,10 @@ type ScheduleSwitcherProps = {
     className?: string;
 };
 
+type ScheduleMenuContentProps = {
+    showHeading: boolean;
+};
+
 export default function ScheduleSwitcher({
     layoutMode,
     className,
@@ -101,15 +105,22 @@ export default function ScheduleSwitcher({
         closeCreateDialog(true);
     };
 
-    const menuContent = (
+    const menuContent = ({ showHeading }: ScheduleMenuContentProps) => (
         <div className="flex flex-col gap-3">
-            <div className="flex items-start justify-between gap-3">
-                <div className="space-y-1">
-                    <p className="app-text-strong text-sm font-semibold">Schedules</p>
-                    <p className="app-text-muted text-xs leading-5">
-                        Switch the active weekly plan or create a new one.
-                    </p>
-                </div>
+            <div
+                className={cn(
+                    "flex gap-3",
+                    showHeading ? "items-start justify-between" : "justify-end",
+                )}
+            >
+                {showHeading ? (
+                    <div className="space-y-1">
+                        <p className="app-text-strong text-sm font-semibold">Schedules</p>
+                        <p className="app-text-muted text-xs leading-5">
+                            Switch the active weekly plan or create a new one.
+                        </p>
+                    </div>
+                ) : null}
 
                 <Button
                     type="button"
@@ -272,14 +283,14 @@ export default function ScheduleSwitcher({
                             </DialogDescription>
                         </DialogHeader>
 
-                        {menuContent}
+                        {menuContent({ showHeading: false })}
                     </DialogContent>
                 </Dialog>
             ) : (
                 <Popover open={menuOpen} onOpenChange={setMenuOpen}>
                     <PopoverTrigger asChild>{trigger}</PopoverTrigger>
                     <PopoverContent align="start" className="w-[min(26rem,calc(100vw-1.5rem))]">
-                        {menuContent}
+                        {menuContent({ showHeading: true })}
                     </PopoverContent>
                 </Popover>
             )}

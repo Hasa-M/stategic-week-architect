@@ -65,7 +65,7 @@ function DialogContent({
                         className={cn(
                             "app-dialog-close absolute top-5 right-5 rounded-full border p-2 transition-all",
                             "hover:-translate-y-0.5",
-                            "focus:ring-[color:var(--app-focus-ring)] focus:ring-4 focus:outline-hidden",
+                            "focus:ring-(--app-focus-ring) focus:ring-4 focus:outline-hidden",
                             "disabled:pointer-events-none",
                             "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
                         )}
@@ -83,7 +83,7 @@ function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
     return (
         <div
             data-slot="dialog-header"
-            className={cn("flex flex-col gap-2 text-center sm:text-left", className)}
+            className={cn("flex flex-col gap-2 text-left", className)}
             {...props}
         />
     );

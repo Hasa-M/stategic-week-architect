@@ -50,51 +50,51 @@ export default function TemplatesBar({
     return (
         <section
             id={id}
-            className={cn("app-panel-muted flex flex-col gap-3 p-3.5", className)}
+            className={cn(
+                "app-card relative flex flex-col gap-2.5 px-4 py-3.5",
+                className
+            )}
             aria-label="Templates"
         >
-            <div
-                className={cn(
-                    "w-full gap-3",
-                    onClose
-                        ? "grid grid-cols-[minmax(0,1fr)_auto] items-center"
-                        : "flex flex-col"
-                )}
-            >
-                <div className="min-w-0 flex flex-col">
-                    <p className="app-text-strong text-sm font-semibold">Templates</p>
-                    <p className="app-text-muted text-xs">
-                        Create, edit, and place reusable activities on the weekly grid.
-                    </p>
-                </div>
+            {onClose ? (
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    className="absolute top-3 right-3 size-8 rounded-xl shadow-none"
+                    onClick={onClose}
+                    aria-label="Hide templates"
+                >
+                    <X className="size-4" />
+                </Button>
+            ) : null}
 
-                {onClose ? (
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon-sm"
-                        className="size-8 shrink-0 self-center justify-self-end rounded-xl"
-                        onClick={onClose}
-                        aria-label="Hide templates"
-                    >
-                        <X className="size-4" />
-                    </Button>
-                ) : null}
+            <div className={cn("min-w-0 space-y-1", onClose && "pr-10")}>
+                <p className="app-text-strong text-sm font-semibold">Templates</p>
+                <p className="app-text-muted text-[11px]">Reusable activities</p>
             </div>
 
-            <ul className="flex flex-row flex-wrap items-center gap-3">
-                <FormModal<ActivityDraft>
-                    title="Add Template"
-                    description="Create a new activity template that can be placed on your schedule."
-                    fields={activityFields}
-                    onSubmit={(data) =>
-                        dispatch({ type: "ADD_TEMPLATE", payload: data })
-                    }
-                >
-                    <Button size="icon-sm" className="rounded-full">
-                        <Plus />
-                    </Button>
-                </FormModal>
+            <ul className="flex flex-wrap items-center gap-2.5">
+                <li>
+                    <FormModal<ActivityDraft>
+                        title="Add Template"
+                        description="Create a new activity template that can be placed on your schedule."
+                        fields={activityFields}
+                        onSubmit={(data) =>
+                            dispatch({ type: "ADD_TEMPLATE", payload: data })
+                        }
+                    >
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="h-8 rounded-full px-3.5 text-xs font-semibold shadow-none"
+                        >
+                            <Plus className="size-4" />
+                            Add
+                        </Button>
+                    </FormModal>
+                </li>
 
                 {templateList.map((template) => (
                     <li key={template.templateId}>

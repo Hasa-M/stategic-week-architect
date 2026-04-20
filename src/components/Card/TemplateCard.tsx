@@ -1,5 +1,5 @@
 import type { Activity, ActivityDraft } from "@/types";
-import { getColorClass } from "@/utils";
+import { getColorStyles } from "@/utils";
 import { FormModal } from "@/components/Forms/FormModal";
 import { activityFieldsForEdit } from "@/fieldConfigs";
 
@@ -14,7 +14,7 @@ export default function TemplateCard({
     onEdit,
     onDelete,
 }: TemplateCardProps) {
-    const colorClass = getColorClass(template.color);
+    const colorStyles = getColorStyles(template.color);
 
     return (
         <FormModal<ActivityDraft & { toPropagate: boolean }>
@@ -37,14 +37,21 @@ export default function TemplateCard({
                 buttonLabel: "Delete template",
             }}
         >
-            <div className="app-card app-card-interactive flex min-h-11 cursor-pointer items-center gap-3 px-3 py-2">
-                <div
-                    className={`w-1.5 self-stretch rounded-full shrink-0 ${colorClass}`}
+            <button
+                type="button"
+                className={`${colorStyles.soft} ${colorStyles.border} app-template-chip inline-flex min-h-8 max-w-full items-center gap-2 rounded-full border px-3 py-1.5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[color:var(--app-focus-ring)]`}
+                title={template.title}
+            >
+                <span
+                    className={`${colorStyles.solid} size-2.5 shrink-0 rounded-full`}
+                    aria-hidden="true"
                 />
-                <span className="app-text flex-1 self-center truncate font-medium">
+                <span
+                    className={`${colorStyles.text} min-w-0 truncate text-xs font-bold`}
+                >
                     {template.title}
                 </span>
-            </div>
+            </button>
         </FormModal>
     );
 }

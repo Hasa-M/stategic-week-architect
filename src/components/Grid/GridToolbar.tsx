@@ -63,6 +63,7 @@ function AddActivityAction({ className }: { className?: string }) {
     const schedule = useScheduleContext();
     const user = useUserContext();
     const dispatch = useDispatch();
+    const buttonClassName = cn(className, "h-8 min-h-8 rounded-full");
 
     const templateOptions = useMemo(
         () =>
@@ -102,7 +103,7 @@ function AddActivityAction({ className }: { className?: string }) {
         return (
             <Button
                 size="sm"
-                className={cn("rounded-full", className)}
+                className={buttonClassName}
                 disabled
                 title="Create at least one template before placing activities on the grid."
             >
@@ -118,7 +119,7 @@ function AddActivityAction({ className }: { className?: string }) {
             timeOptions={timeOptions}
             onSubmit={handlePlaceActivity}
         >
-            <Button size="sm" className={cn("rounded-full", className)}>
+            <Button size="sm" className={buttonClassName}>
                 <Plus className="size-3.5" />
                 Add Activity
             </Button>
@@ -251,7 +252,7 @@ export function GridSettingsControls({
         >
             <div
                 className={cn(
-                    "flex items-center rounded-lg bg-(--app-surface-soft) px-2.5 py-1.5",
+                    "flex items-center",
                     singleLine
                         ? "shrink-0 flex-nowrap gap-1.5"
                         : "flex-1 flex-wrap gap-1.5 xl:min-w-84"
@@ -280,7 +281,7 @@ export function GridSettingsControls({
 
             <div
                 className={cn(
-                    "flex w-fit max-w-full items-center rounded-lg bg-(--app-surface-soft) px-2.5 py-1.5",
+                    "flex w-fit max-w-full items-center",
                     singleLine
                         ? "shrink-0 flex-nowrap gap-2.5 self-auto"
                         : "flex-none flex-wrap gap-2.5 self-start md:self-auto"
@@ -324,7 +325,7 @@ export function GridSettingsControls({
             >
                 <div
                     className={cn(
-                        "flex items-center rounded-lg bg-(--app-surface-soft) px-2.5 py-1.5",
+                        "flex items-center",
                         singleLine
                             ? "shrink-0 flex-nowrap gap-2.5"
                             : "flex-1 flex-wrap gap-2.5 xl:min-w-64 xl:basis-auto"
@@ -420,7 +421,7 @@ function GridToolbarSummary({
             </div>
 
             <div className="flex items-center gap-1.5">
-                <AddActivityAction className="h-9 flex-1 justify-center px-3.5 text-xs" />
+                <AddActivityAction className="flex-1 justify-center px-3.5 text-xs" />
                 <ExpandGridAction
                     isExpanded={isExpanded}
                     onToggleExpand={onToggleExpand}
@@ -435,11 +436,11 @@ function GridToolbarStacked({
     onToggleExpand,
 }: Pick<GridToolbarProps, "isExpanded" | "onToggleExpand">) {
     return (
-        <div className="app-card flex flex-col gap-2.5 p-2.5">
+        <div className="app-card flex flex-col gap-4 p-2.5">
             <GridSettingsControls singleLine className="w-full" />
 
             <div className="flex items-center gap-1.5">
-                <AddActivityAction className="h-9 flex-1 justify-center px-3.5 text-xs" />
+                <AddActivityAction className="flex-1 justify-center px-3.5 text-xs" />
                 <ExpandGridAction
                     isExpanded={isExpanded}
                     onToggleExpand={onToggleExpand}
@@ -470,7 +471,7 @@ function GridToolbarInline({
                 inputIdPrefix={measurement ? "grid-toolbar-measure-" : undefined}
                 trailingActions={
                     <>
-                        <AddActivityAction className="h-8 px-3 text-xs" />
+                        <AddActivityAction className="px-3 text-xs" />
                         <ExpandGridAction
                             isExpanded={isExpanded}
                             onToggleExpand={onToggleExpand}

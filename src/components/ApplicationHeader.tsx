@@ -16,8 +16,8 @@ type ApplicationHeaderProps = {
     onToggleTemplates: () => void;
 };
 
-const BRAND_TITLE = "Weekly Flow Studio";
-const BRAND_TITLE_COMPACT = "Weekly Flow";
+const BRAND_TITLE = "The Weekly Architect";
+const BRAND_TITLE_COMPACT = "The Weekly Architect";
 const BRAND_SUBTITLE = "Simple planning";
 
 function ApplicationBrand({
@@ -34,7 +34,7 @@ function ApplicationBrand({
                     className="app-application-header__brand-logo"
                 />
             </span>
-            <div className="flex min-w-0 flex-col justify-center gap-0.5">
+            <div className="app-application-header__brand-copy">
                 <span className="app-application-header__brand-name">
                     {compact
                         ? BRAND_TITLE_COMPACT

@@ -1,123 +1,57 @@
 # Strategic Weekly Architect
 
-A weekly schedule planning application designed to help users organize activities with a focus on strategic time management. Create reusable activity templates, share them across schedules, place them on a visual weekly grid, and manage activity-linked notes — all with a modern, type-safe React architecture.
+Strategic Weekly Architect is a weekly planning app for organizing reusable activity templates, scheduling them across one or more weekly plans, and attaching notes to specific work blocks.
 
-## Features
+The repository is currently frontend-only. The planner works locally with persistent browser storage today; backend APIs, database persistence, and authentication are the next planned delivery phase and are not implemented yet.
 
-- **Activity Templates** — Create reusable templates with title, description, color coding, and subfactors
-- **Weekly Schedule Grid** — Visual calendar interface that renders placed activities across visible days
-- **Grid Controls** — Filter visible days, choose a visible time range, switch slot size between 30 min and 1 hour, and place activities directly from the toolbar
-- **Direct Rescheduling** — Drag placed activities around the grid on desktop and touch devices
-- **Grid Focus Mode** — Expand the planner grid to full page when you need more room
-- **Color-Coded Activities** — 11 color options for visual organization
-- **Notes System** — Sidebar for notes linked to placed activities
-- **Schedule Summary** — Sidebar metrics for planned hours, busiest day, templates, and notes
-- **Persistent State** — LocalStorage integration for automatic save/restore
-- **Template Propagation** — Smart update logic when editing templates
+## Current Status
 
-## Application Layout
+- Functional React and TypeScript planner with reducer-driven state
+- Multiple schedules supported from a shared user workspace
+- Responsive desktop, tablet, and mobile planner layouts
+- Local persistence is handled through `localStorage`
+- Backend, database, and authentication work are still upcoming
 
-```
-┌─────────────────────────────────────────────────┬──────────┐
-│  Header (Title + toggle view)                    │          │
-├─────────────────────────────────────────────────┤ Sidebar  │
-│  Templates Bar (horizontal scroll)              │ (Notes / │
-├─────────────────────────────────────────────────┤Summary)  │
-│  Grid Toolbar                                   │          │
-│    [Days Filter] [Slot Size] [Time Range] [+ Add Activity] │          │
-├─────────────────────────────────────────────────┤          │
-│  Schedule Grid                                  │          │
-└─────────────────────────────────────────────────┴──────────┘
-```
+## Current Features
 
-## Tech Stack
+- **Shared activity templates** with title, description, color, and subfactors
+- **Multiple schedules** with create, switch, rename, and delete flows
+- **Weekly grid planner** for rendering placed activities across visible days
+- **Grid controls** for visible days, visible hour range, and slot size (`30` or `60` minutes)
+- **Activity placement flow** from the toolbar, including optional note creation while placing an activity
+- **Placed activity editing** for time, day, template selection, notes, and deletion
+- **Direct rescheduling** inside the grid on desktop and touch devices
+- **Notes sidebar** linked to placed activities
+- **Summary dashboard** with planned hours, busiest day, visible week breakdown, template count, and note count
+- **Grid focus mode** to expand the planner to a full-page working view
+- **Theme switching** with light, high-contrast, and dark modes
+- **Template propagation** so template edits can update already placed activities when requested
+- **Persistent user state** centralized in the provider and storage service
 
-### Frontend (In Progress)
+## Architecture Snapshot
 
-| Technology | Purpose |
-|------------|---------|
-| React 19 | UI framework |
-| TypeScript 5.9 | Type safety |
-| Vite 7 | Build tool & dev server |
-| Tailwind CSS 4 | Utility-first styling |
-| Radix UI | Accessible primitives (Dialog, Select, Checkbox, etc.) |
-| Lucide React | Icons |
-| Class Variance Authority | Component variants |
+- **Frontend stack**: React 19, TypeScript 5.9, Vite 7, Tailwind CSS 4, Radix UI, Lucide React, Class Variance Authority
+- **State management**: React Context + `useReducer` in `src/context/`
+- **Persistence**: centralized in `src/context/scheduleProvider.tsx` through `src/services/storageService.ts`
+- **Core domain types**: `src/types.ts`
+- **Form system**: config-driven modals built from `src/components/Forms/` and `src/fieldConfigs.ts`
+- **Architecture notes**: see `docs/architecture.md`
 
-### Backend (Not Actually Developed)
-
-| Technology | Purpose |
-|------------|---------|
-| NestJS | Backend framework with TypeScript |
-| WebAssembly (C) | Performance-critical computations |
-
-The backend will use NestJS for the API layer. WASM modules written in C will handle data-heavy operations (schedule optimization, conflict detection, analytics calculations) as a proof of concept for hybrid JS/WASM architecture.
-
-
-## State Management
-
-The app uses React Context + useReducer for centralized state management (type-first development approach). The persisted root state is a frontend-safe `User` model that owns shared templates, the active schedule id, and the schedules collection:
-
-```typescript
-type User = {
-    id: string;
-    displayName: string;
-    theme: ThemeMode;
-    activeScheduleId: string;
-    templates: Record<string, Activity>;
-    schedules: Record<string, ScheduleState>;
-};
-
-// Reducer actions
-type ScheduleAction =
-    | { type: "ADD_TEMPLATE"; payload: ActivityDraft }
-    | { type: "EDIT_TEMPLATE"; payload: { activity: Activity; toPropagate: boolean } }
-    | { type: "DELETE_TEMPLATE"; payload: string }
-    | { type: "CREATE_SCHEDULE"; payload?: { name?: string } }
-    | { type: "SET_ACTIVE_SCHEDULE"; payload: string }
-    | { type: "PLACE_ACTIVITY"; payload: PlacedActivityDraft }
-    | { type: "ADD_NOTE"; payload: NoteDraft }
-    // ... more actions
-```
-
-## Form System
-
-The `FormModal` component uses a polymorphic pattern to dynamically render forms from field configurations:
-
-```typescript
-const activityFields: FormFieldConfig<ActivityDraft>[] = [
-    { name: "title", type: "text", label: "Title", required: true },
-    { name: "description", type: "textarea", label: "Description" },
-    { name: "color", type: "select", options: COLOR_OPTIONS, showColorIndicator: true },
-];
-
-<FormModal<ActivityDraft>
-    title="Add Template"
-    fields={activityFields}
-    onSubmit={handleSubmit}
->
-    <Button>Add Template</Button>
-</FormModal>
-```
+The persisted root model is a frontend-safe `User` state that owns the active schedule id, shared templates, theme selection, and the collection of schedules.
 
 ## Getting Started
 
 ### Prerequisites
 
 - Node.js 18+
-- npm or yarn
+- npm
 
 ### Installation
 
 ```bash
-# Clone the repository
 git clone https://github.com/your-username/strategic-weekly-architect.git
 cd strategic-weekly-architect
-
-# Install dependencies
 npm install
-
-# Start development server
 npm run dev
 ```
 
@@ -125,31 +59,51 @@ npm run dev
 
 | Script | Description |
 |--------|-------------|
-| `npm run dev` | Start Vite dev server |
-| `npm run build` | TypeScript check + production build |
+| `npm run dev` | Start the Vite development server |
+| `npm run build` | Run the TypeScript build and production bundle |
 | `npm run lint` | Run ESLint |
-| `npm run preview` | Preview production build |
+| `npm run preview` | Preview the production build |
 
-## Roadmap
+## Delivery Status
 
-### Frontend
-- [x] Schedule grid visualization (main calendar view)
-- [x] Drag-and-drop rescheduling for placed activities
-- [ ] Drag templates directly from the template bar into the grid
-- [x] Grid toolbar (days filter, time slots, add activity)
-- [x] Notes sidebar implementation
-- [x] Template card edit/delete dialogs
-- [x] Schedule summary sidebar
-- [ ] Subfactors nested form field
+### Done
 
-### Backend
-- [ ] NestJS project setup
-- [ ] REST API for schedules, templates, notes
-- [ ] User authentication (JWT)
-- [ ] Database integration (PostgreSQL)
-- [ ] WASM module: schedule conflict detection
-- [ ] WASM module: time analytics calculations
-- [ ] Cloud sync
+- [x] Shared template CRUD
+- [x] Multi-schedule state with active schedule switching
+- [x] Schedule rename and delete flows
+- [x] Weekly grid rendering
+- [x] Grid settings controls for days, hours, and slot size
+- [x] Place, edit, delete, and drag placed activities
+- [x] Activity-linked notes
+- [x] Summary dashboard
+- [x] Responsive planner layout
+- [x] Theme persistence
+- [x] Local browser persistence
+
+### Next
+
+- [ ] Create the backend foundation for users, schedules, templates, placed activities, and notes
+- [ ] Add database persistence for the planning domain
+- [ ] Introduce authentication and user-owned data access
+- [ ] Replace local-only persistence with authenticated API sync
+- [ ] Add server-side validation and ownership rules
+
+### Known Gaps And Later Work
+
+- [ ] Drag templates directly from the templates bar into the grid
+- [ ] Rich nested editing for template subfactors
+- [ ] Dashboard widget customization
+
+## Planned Backend Track
+
+The next implementation phase is expected to cover:
+
+- A backend application layer for the planner domain
+- A relational database for persistent user, schedule, activity, and note data
+- Authentication so schedules and templates become user-scoped instead of browser-scoped
+- A migration path from frontend-only storage to API-backed persistence
+
+This README will be updated again once the backend structure, database choice, and authentication flow are implemented in the repository.
 
 ## License
 
