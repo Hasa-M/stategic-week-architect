@@ -93,19 +93,6 @@ export type SavePlacedActivityPayload = PlacedActivityUpdate & {
     notes: ActivityNoteInput[];
 };
 
-export type ScheduleCollectionItem = {
-    id: string;
-    name: string;
-    templateCount: number;
-    placedActivityCount: number;
-    noteCount: number;
-};
-
-export type ScheduleCollectionSummary = {
-    activeScheduleId: string;
-    schedules: ScheduleCollectionItem[];
-};
-
 export type ScheduleState = {
     id: string;
     name: string;

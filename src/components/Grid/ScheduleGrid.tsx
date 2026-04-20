@@ -14,6 +14,7 @@ import {
     clipActivityToVisibleRange,
     type VisiblePlacedActivity,
 } from "@/lib/grid";
+import { cn } from "@/lib/utils";
 import { getColorStyles } from "@/utils";
 import type {
     ActivityNoteInput,
@@ -209,7 +210,11 @@ function buildDayOverlapLayout(dayActivities: VisiblePlacedActivity[]) {
     return layout;
 }
 
-export default function ScheduleGrid() {
+export default function ScheduleGrid({
+    continuousScroll = false,
+}: {
+    continuousScroll?: boolean;
+}) {
     const schedule = useScheduleContext();
     const user = useUserContext();
     const dispatch = useDispatch();
@@ -542,8 +547,20 @@ export default function ScheduleGrid() {
 
     return (
         <>
-            <div className="app-panel flex h-full min-h-0 flex-col overflow-hidden">
-                <div className="app-scrollbar min-h-0 flex-1 overflow-auto">
+            <div
+                className={cn(
+                    "app-panel flex flex-col overflow-hidden",
+                    !continuousScroll && "h-full min-h-0"
+                )}
+            >
+                <div
+                    className={cn(
+                        "app-scrollbar",
+                        continuousScroll
+                            ? "overflow-x-auto overflow-y-visible"
+                            : "min-h-0 flex-1 overflow-auto"
+                    )}
+                >
                     <div
                         className="grid min-w-190"
                         style={{

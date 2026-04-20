@@ -18,7 +18,7 @@ const buttonVariants = cva(
                 default:
                     "bg-primary text-on-primary text-base shadow-[var(--app-shadow-button-primary)] hover:-translate-y-0.5 hover:bg-primary-hover hover:shadow-[var(--app-shadow-button-primary-hover)]",
                 outline:
-                    "border border-[color:var(--app-border-subtle)] bg-[color:var(--app-button-outline-bg)] text-base text-[color:var(--app-text)] shadow-[var(--app-shadow-button-outline)] hover:-translate-y-0.5 hover:border-[color:var(--app-border-strong)] hover:bg-[color:var(--app-button-outline-bg-hover)]",
+                    "border border-(--app-border-subtle) bg-(--app-button-outline-bg) text-base text-(--app-text) shadow-[var(--app-shadow-button-outline)] hover:-translate-y-0.5 hover:border-(--app-border-strong) hover:bg-(--app-button-outline-bg-hover)",
                 ghost: "bg-[color:var(--app-button-ghost-bg)] font-semibold text-base text-[color:var(--app-text-soft)] shadow-[var(--app-shadow-button-ghost)] hover:bg-[color:var(--app-button-ghost-bg-hover)] hover:text-primary",
                 destructive:
                     "bg-destructive text-base text-on-primary shadow-[var(--app-shadow-button-destructive)] hover:-translate-y-0.5 hover:opacity-95 hover:shadow-[var(--app-shadow-button-destructive-hover)]",

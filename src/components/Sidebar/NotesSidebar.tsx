@@ -7,6 +7,7 @@ import NoteCard from "../Card/NoteCard";
 import { FormModal } from "../Forms/FormModal";
 import { buildNoteFields } from "@/fieldConfigs";
 import { useDispatch, useScheduleContext } from "@/context/hooks";
+import { cn } from "@/lib/utils";
 import type { Note, NoteDraft, PlacedActivity } from "@/types";
 import SidebarSectionHeader from "@/components/Sidebar/SidebarSectionHeader";
 
@@ -51,7 +52,11 @@ function getActivityLabel(activity: PlacedActivity) {
     )} · ${activity.title}`;
 }
 
-export default function NotesSidebar() {
+export default function NotesSidebar({
+    continuousScroll = false,
+}: {
+    continuousScroll?: boolean;
+}) {
     const schedule = useScheduleContext();
     const dispatch = useDispatch();
 
@@ -112,10 +117,6 @@ export default function NotesSidebar() {
     }, [activityOrder, schedule?.notes]);
 
     const canAddNotes = activityOptions.length > 0;
-    const notesDescription = canAddNotes
-        ? `${noteList.length} note${noteList.length === 1 ? "" : "s"} linked to ${activityOptions.length} placed activit${activityOptions.length === 1 ? "y" : "ies"}.`
-        : "Place an activity on the grid to start collecting notes.";
-
     const handleAddNote = useCallback(
         (data: NoteDraft) => {
             dispatch({ type: "ADD_NOTE", payload: data });
@@ -138,10 +139,14 @@ export default function NotesSidebar() {
     );
 
     return (
-        <div className="flex h-full min-h-0 flex-col gap-4 p-2">
+        <div
+            className={cn(
+                "flex flex-col gap-4 p-2",
+                !continuousScroll && "h-full min-h-0"
+            )}
+        >
             <SidebarSectionHeader
                 title="All Activity Notes"
-                description={notesDescription}
                 action={
                     canAddNotes ? (
                         <FormModal<NoteDraft>
@@ -152,7 +157,7 @@ export default function NotesSidebar() {
                         >
                             <Button
                                 size="icon-sm"
-                                className="rounded-full"
+                                className="size-8 rounded-full"
                                 aria-label="Add note"
                             >
                                 <Plus />
@@ -165,7 +170,7 @@ export default function NotesSidebar() {
                         >
                             <Button
                                 size="icon-sm"
-                                className="rounded-full"
+                                className="size-8 rounded-full"
                                 aria-label="Add note"
                                 disabled
                             >
@@ -177,25 +182,43 @@ export default function NotesSidebar() {
             />
 
             {noteList.length === 0 ? (
-                <div className="app-card app-text-muted flex min-h-0 flex-1 items-center justify-center px-4 py-10 text-center text-sm">
+                <div
+                    className={cn(
+                        "app-card app-text-muted flex items-center justify-center px-4 py-10 text-center text-sm",
+                        !continuousScroll && "min-h-0 flex-1"
+                    )}
+                >
                     {canAddNotes
                         ? "No notes yet. Click + to add one."
                         : "Place an activity on the grid before adding notes."}
                 </div>
             ) : (
-                <ul className="flex min-h-0 flex-1 list-none flex-col gap-3">
-                    {noteList.map((note) => (
-                        <li key={note.id}>
-                            <NoteCard
-                                note={note}
-                                fields={noteFields}
-                                activityLabel={activityLabels.get(note.activityId)}
-                                onEdit={handleEditNote}
-                                onDelete={handleDeleteNote}
-                            />
-                        </li>
-                    ))}
-                </ul>
+                <div
+                    className={cn(
+                        continuousScroll
+                            ? "flex flex-col"
+                            : "app-scrollbar min-h-0 flex-1 overflow-y-auto pr-1"
+                    )}
+                >
+                    <ul
+                        className={cn(
+                            "flex list-none flex-col gap-3 pb-1",
+                            !continuousScroll && "min-h-full"
+                        )}
+                    >
+                        {noteList.map((note) => (
+                            <li key={note.id}>
+                                <NoteCard
+                                    note={note}
+                                    fields={noteFields}
+                                    activityLabel={activityLabels.get(note.activityId)}
+                                    onEdit={handleEditNote}
+                                    onDelete={handleDeleteNote}
+                                />
+                            </li>
+                        ))}
+                    </ul>
+                </div>
             )}
         </div>
     );
