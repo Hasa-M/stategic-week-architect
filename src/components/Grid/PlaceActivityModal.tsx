@@ -35,7 +35,7 @@ const ALL_DAYS: Day[] = [
     "Sunday",
 ];
 
-type PlacedActivityDialogInitialData = {
+export type PlacedActivityDialogInitialData = {
     templateId: string;
     day: Day;
     startTime: number;
@@ -80,6 +80,15 @@ type PlaceActivityModalProps = {
     children: ReactNode;
     templateOptions: SelectOption[];
     timeOptions: SelectOption[];
+    onSubmit: (data: PlacedActivityDraft) => void;
+};
+
+type AddPlacedActivityModalProps = {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    templateOptions: SelectOption[];
+    timeOptions: SelectOption[];
+    initialData?: PlacedActivityDialogInitialData;
     onSubmit: (data: PlacedActivityDraft) => void;
 };
 
@@ -175,6 +184,19 @@ function mergeTimeOptions(
     return Array.from(nextOptions.values()).sort(
         (left, right) => Number(left.value) - Number(right.value)
     );
+}
+
+function buildAddDialogKey(
+    open: boolean,
+    initialData?: PlacedActivityDialogInitialData
+) {
+    if (!initialData) {
+        return open ? "add-open" : "add-closed";
+    }
+
+    return `add-${initialData.day}-${initialData.startTime}-${initialData.endTime}-${
+        open ? "open" : "closed"
+    }`;
 }
 
 function PlacedActivityDialogContent(props: PlacedActivityDialogProps) {
@@ -333,7 +355,7 @@ function PlacedActivityDialogContent(props: PlacedActivityDialogProps) {
                         />
                     </div>
 
-                    <div className="flex flex-col gap-1.5">
+                    <div className="flex flex-col gap-1.5 md:col-span-2">
                         <Label htmlFor="placed-activity-day">
                             Day
                             <span className="ml-1 text-destructive">*</span>
@@ -606,6 +628,30 @@ export function EditPlacedActivityModal({
     );
 }
 
+export function AddPlacedActivityModal({
+    initialData,
+    onOpenChange,
+    onSubmit,
+    open,
+    templateOptions,
+    timeOptions,
+}: AddPlacedActivityModalProps) {
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <PlacedActivityDialogContent
+                key={buildAddDialogKey(open, initialData)}
+                mode="add"
+                open={open}
+                onOpenChange={onOpenChange}
+                templateOptions={templateOptions}
+                timeOptions={timeOptions}
+                initialData={initialData}
+                onSubmit={onSubmit}
+            />
+        </Dialog>
+    );
+}
+
 export default function PlaceActivityModal({
     children,
     templateOptions,
@@ -618,7 +664,7 @@ export default function PlaceActivityModal({
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
             <PlacedActivityDialogContent
-                key={isOpen ? "add-open" : "add-closed"}
+                key={buildAddDialogKey(isOpen)}
                 mode="add"
                 open={isOpen}
                 onOpenChange={setIsOpen}

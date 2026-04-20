@@ -9,7 +9,10 @@ import {
 } from "react";
 
 import { useDispatch, useScheduleContext, useUserContext } from "@/context/hooks";
-import { EditPlacedActivityModal } from "@/components/Grid/PlaceActivityModal";
+import {
+    AddPlacedActivityModal,
+    EditPlacedActivityModal,
+} from "@/components/Grid/PlaceActivityModal";
 import {
     clipActivityToVisibleRange,
     type VisiblePlacedActivity,
@@ -21,6 +24,7 @@ import type {
     Day,
     Note,
     PlacedActivity,
+    PlacedActivityDraft,
     SavePlacedActivityPayload,
 } from "@/types";
 
@@ -47,6 +51,12 @@ type OverlapLayout = {
     laneIndex: number;
     laneCount: number;
     isOverlapping: boolean;
+};
+
+type PendingPlacement = {
+    day: Day;
+    startTime: number;
+    endTime: number;
 };
 
 function formatMinutes(minutes: number) {
@@ -228,6 +238,8 @@ export default function ScheduleGrid({
     const [selectedPlacedId, setSelectedPlacedId] = useState<string | null>(
         null,
     );
+    const [pendingPlacement, setPendingPlacement] =
+        useState<PendingPlacement | null>(null);
     const isDragging = dragState !== null;
 
     const slotTimes = useMemo(() => {
@@ -259,6 +271,7 @@ export default function ScheduleGrid({
             })),
         [user.templates],
     );
+    const canPlaceActivity = templateOptions.length > 0;
 
     const timeOptions = useMemo(() => {
         const options: { value: string; label: string }[] = [];
@@ -369,6 +382,36 @@ export default function ScheduleGrid({
         dragStateRef.current = null;
         setDragState(null);
     }, []);
+
+    const handlePlaceActivity = useCallback(
+        (data: PlacedActivityDraft) => {
+            dispatch({ type: "PLACE_ACTIVITY", payload: data });
+            setPendingPlacement(null);
+        },
+        [dispatch],
+    );
+
+    const handleGridSlotClick = useCallback(
+        (day: Day, slotStartTime: number) => {
+            if (!canPlaceActivity) {
+                return;
+            }
+
+            const nextEndTime = Math.min(slotStartTime + slotDuration, endTime);
+
+            if (nextEndTime <= slotStartTime) {
+                return;
+            }
+
+            setSelectedPlacedId(null);
+            setPendingPlacement({
+                day,
+                startTime: slotStartTime,
+                endTime: nextEndTime,
+            });
+        },
+        [canPlaceActivity, endTime, slotDuration],
+    );
 
     const handleSavePlacedActivity = useCallback(
         (data: SavePlacedActivityPayload) => {
@@ -611,10 +654,21 @@ export default function ScheduleGrid({
                                     style={{ height: columnHeight }}
                                 >
                                     {slotTimes.map((slot) => (
-                                        <div
+                                        <button
                                             key={`${day}-${slot.minutes}`}
-                                            className="app-grid-slot-border border-b"
+                                            type="button"
+                                            className="app-grid-slot-button app-grid-slot-border border-0 border-b"
                                             style={{ height: SLOT_HEIGHT }}
+                                            onClick={() =>
+                                                handleGridSlotClick(day, slot.minutes)
+                                            }
+                                            aria-label={`Add activity on ${day} at ${slot.label}`}
+                                            title={
+                                                canPlaceActivity
+                                                    ? `Add activity on ${day} at ${slot.label}`
+                                                    : "Create at least one template before placing activities on the grid."
+                                            }
+                                            disabled={!canPlaceActivity}
                                         />
                                     ))}
 
@@ -804,6 +858,26 @@ export default function ScheduleGrid({
                     </div>
                 </div>
             </div>
+
+            {pendingPlacement ? (
+                <AddPlacedActivityModal
+                    open={pendingPlacement !== null}
+                    onOpenChange={(open) => {
+                        if (!open) {
+                            setPendingPlacement(null);
+                        }
+                    }}
+                    templateOptions={templateOptions}
+                    timeOptions={timeOptions}
+                    initialData={{
+                        templateId: "",
+                        day: pendingPlacement.day,
+                        startTime: pendingPlacement.startTime,
+                        endTime: pendingPlacement.endTime,
+                    }}
+                    onSubmit={handlePlaceActivity}
+                />
+            ) : null}
 
             {selectedActivity ? (
                 <EditPlacedActivityModal
