@@ -31,6 +31,8 @@ type TimeChooserProps = {
     className?: string;
 };
 
+const FREE_TYPED_TIME_STEP = 1;
+
 function padTimeSegment(value: number) {
     return value.toString().padStart(2, "0");
 }
@@ -52,13 +54,19 @@ export default function TimeChooser({
     const normalizedValue = normalizeTimeValue(value, {
         minMinutes,
         maxMinutes,
+        step: FREE_TYPED_TIME_STEP,
     });
     const { hours, minutes } = getTimeParts(normalizedValue);
     const [hourInput, setHourInput] = useState(() => padTimeSegment(hours));
+    const [minuteInput, setMinuteInput] = useState(() => padTimeSegment(minutes));
 
     useEffect(() => {
         setHourInput(padTimeSegment(hours));
     }, [hours]);
+
+    useEffect(() => {
+        setMinuteInput(padTimeSegment(minutes));
+    }, [minutes]);
 
     const commitValue = useCallback(
         (nextValue: number) => {
@@ -66,6 +74,7 @@ export default function TimeChooser({
                 normalizeTimeValue(nextValue, {
                     minMinutes,
                     maxMinutes,
+                    step: FREE_TYPED_TIME_STEP,
                 })
             );
         },
@@ -102,6 +111,23 @@ export default function TimeChooser({
 
         commitValue(toTimeValue(nextHour, minutes));
     }, [commitValue, hourInput, hours, maxMinutes, minutes]);
+
+    const commitMinuteInput = useCallback(() => {
+        const parsedMinute = Number(minuteInput.trim());
+
+        if (!Number.isFinite(parsedMinute)) {
+            setMinuteInput(padTimeSegment(minutes));
+            return;
+        }
+
+        const nextMinute = clamp(
+            Math.floor(parsedMinute),
+            0,
+            hours === 24 ? 0 : 59
+        );
+
+        commitValue(toTimeValue(hours, nextMinute));
+    }, [commitValue, hours, minuteInput, minutes]);
 
     const handleHourKeyDown = useCallback(
         (event: KeyboardEvent<HTMLInputElement>) => {
@@ -142,30 +168,47 @@ export default function TimeChooser({
             if (event.key === "ArrowDown") {
                 event.preventDefault();
                 adjustMinutes(TIME_MINUTE_STEP);
+                return;
+            }
+
+            if (event.key === "Enter") {
+                event.preventDefault();
+                commitMinuteInput();
+                return;
+            }
+
+            if (event.key === "Escape") {
+                event.preventDefault();
+                setMinuteInput(padTimeSegment(minutes));
+                return;
             }
         },
-        [adjustMinutes]
+        [adjustMinutes, commitMinuteInput, minutes]
     );
 
     const canIncreaseHours =
         normalizeTimeValue(toTimeValue(hours + 1, minutes), {
             minMinutes,
             maxMinutes,
+            step: FREE_TYPED_TIME_STEP,
         }) !== normalizedValue;
     const canDecreaseHours =
         normalizeTimeValue(toTimeValue(hours - 1, minutes), {
             minMinutes,
             maxMinutes,
+            step: FREE_TYPED_TIME_STEP,
         }) !== normalizedValue;
     const canIncreaseMinutes =
         normalizeTimeValue(normalizedValue + TIME_MINUTE_STEP, {
             minMinutes,
             maxMinutes,
+            step: FREE_TYPED_TIME_STEP,
         }) !== normalizedValue;
     const canDecreaseMinutes =
         normalizeTimeValue(normalizedValue - TIME_MINUTE_STEP, {
             minMinutes,
             maxMinutes,
+            step: FREE_TYPED_TIME_STEP,
         }) !== normalizedValue;
 
     return (
@@ -244,12 +287,18 @@ export default function TimeChooser({
 
                         <Input
                             id={`${id}-minutes`}
-                            value={padTimeSegment(minutes)}
-                            readOnly
+                            value={minuteInput}
+                            onChange={(event) =>
+                                setMinuteInput(
+                                    event.target.value.replace(/\D/g, "").slice(0, 2)
+                                )
+                            }
+                            onBlur={commitMinuteInput}
                             onKeyDown={handleMinuteKeyDown}
+                            inputMode="numeric"
                             aria-label="Minutes"
                             aria-valuemin={0}
-                            aria-valuemax={55}
+                            aria-valuemax={hours === 24 ? 0 : 59}
                             aria-valuenow={minutes}
                             role="spinbutton"
                             disabled={disabled}

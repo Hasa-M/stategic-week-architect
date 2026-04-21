@@ -23,7 +23,6 @@ import {
     END_OF_DAY_MINUTES,
     formatMinutes,
     isTimeWithinRange,
-    TIME_MINUTE_STEP,
 } from "@/lib/grid";
 import type {
     ActivityNoteDraft,
@@ -120,6 +119,8 @@ const EMPTY_NOTE_DRAFT: ActivityNoteDraft = {
     color: "slate",
 };
 
+const MIN_ACTIVITY_DURATION_MINUTES = 1;
+
 function buildInitialFormState(
     defaultStartTime: number,
     defaultEndTime: number,
@@ -194,10 +195,10 @@ function PlacedActivityDialogContent(props: PlacedActivityDialogProps) {
     const [error, setError] = useState<string | null>(null);
     const startTimeValue = Number(formState.startTime);
     const endTimeValue = Number(formState.endTime);
-    const maxStartTime = Math.max(0, endTimeValue - TIME_MINUTE_STEP);
+    const maxStartTime = Math.max(0, endTimeValue - MIN_ACTIVITY_DURATION_MINUTES);
     const minEndTime = Math.min(
         END_OF_DAY_MINUTES,
-        startTimeValue + TIME_MINUTE_STEP
+        startTimeValue + MIN_ACTIVITY_DURATION_MINUTES
     );
     const showVisibleRangeHint =
         !isTimeWithinRange(
@@ -222,11 +223,11 @@ function PlacedActivityDialogContent(props: PlacedActivityDialogProps) {
 
         const nextStartTime = Math.min(
             startTimeValue,
-            END_OF_DAY_MINUTES - TIME_MINUTE_STEP
+            END_OF_DAY_MINUTES - MIN_ACTIVITY_DURATION_MINUTES
         );
         const nextEndTime = Math.min(
             END_OF_DAY_MINUTES,
-            nextStartTime + TIME_MINUTE_STEP
+            nextStartTime + MIN_ACTIVITY_DURATION_MINUTES
         );
 
         setFormState((currentState) => {
