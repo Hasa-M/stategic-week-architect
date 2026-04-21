@@ -17,9 +17,9 @@ The repository is currently frontend-only. The planner works locally with persis
 - **Shared activity templates** with title, description, color, and subfactors
 - **Multiple schedules** with create, switch, rename, and delete flows
 - **Weekly grid planner** for rendering placed activities across visible days
-- **Grid controls** for visible days, visible hour range, and slot size (`30` or `60` minutes)
-- **Activity placement flow** from the toolbar, including optional note creation while placing an activity
-- **Placed activity editing** for time, day, template selection, notes, and deletion
+- **Grid controls** for visible days, visible hour range, and slot size (`15`, `30`, or `60` minutes)
+- **Activity placement flow** from the toolbar, including optional note creation while placing an activity and a 5-minute time picker
+- **Placed activity editing** for time, day, template selection, notes, and deletion, with the same hour/minute time picker
 - **Direct rescheduling** inside the grid on desktop and touch devices
 - **Notes sidebar** linked to placed activities
 - **Summary dashboard** with planned hours, busiest day, visible week breakdown, template count, and note count

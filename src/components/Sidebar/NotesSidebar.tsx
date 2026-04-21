@@ -7,6 +7,7 @@ import NoteCard from "../Card/NoteCard";
 import { FormModal } from "../Forms/FormModal";
 import { buildNoteFields } from "@/fieldConfigs";
 import { useDispatch, useScheduleContext } from "@/context/hooks";
+import { formatMinutes } from "@/lib/grid";
 import { cn } from "@/lib/utils";
 import type { Note, NoteDraft, PlacedActivity } from "@/types";
 import SidebarSectionHeader from "@/components/Sidebar/SidebarSectionHeader";
@@ -20,15 +21,6 @@ const DAY_ORDER: Record<PlacedActivity["day"], number> = {
     Saturday: 5,
     Sunday: 6,
 };
-
-function formatMinutes(minutes: number) {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-
-    return `${hours.toString().padStart(2, "0")}:${mins
-        .toString()
-        .padStart(2, "0")}`;
-}
 
 function comparePlacedActivities(left: PlacedActivity, right: PlacedActivity) {
     const dayDifference = DAY_ORDER[left.day] - DAY_ORDER[right.day];

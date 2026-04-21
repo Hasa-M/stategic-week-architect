@@ -24,7 +24,7 @@ export type Day =
     | "Saturday"
     | "Sunday";
 
-export type SlotWindow = 30 | 60;
+export type SlotWindow = 15 | 30 | 60;
 
 export type Subfactor = {
     title: string;

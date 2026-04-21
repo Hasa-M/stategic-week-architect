@@ -2,6 +2,7 @@ import {
     DEFAULT_GRID_END_TIME,
     DEFAULT_GRID_SLOT_DURATION,
     DEFAULT_GRID_START_TIME,
+    isValidGridSlotDuration,
     normalizeGridSettings,
 } from "@/lib/grid";
 import {
@@ -188,6 +189,7 @@ function isScheduleState(value: unknown): value is ScheduleState {
         isRecord(grid) &&
         Array.isArray(grid.days) &&
         typeof grid.slotDuration === "number" &&
+        isValidGridSlotDuration(grid.slotDuration) &&
         typeof grid.startTime === "number" &&
         typeof grid.endTime === "number"
     );
@@ -238,6 +240,7 @@ function isLegacyScheduleState(value: unknown): value is LegacyPersistedSchedule
         isRecord(grid) &&
         Array.isArray(grid.days) &&
         typeof grid.slotDuration === "number" &&
+        isValidGridSlotDuration(grid.slotDuration) &&
         typeof grid.startTime === "number" &&
         typeof grid.endTime === "number"
     );

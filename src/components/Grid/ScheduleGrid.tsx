@@ -15,6 +15,7 @@ import {
 } from "@/components/Grid/PlaceActivityModal";
 import {
     clipActivityToVisibleRange,
+    formatMinutes,
     type VisiblePlacedActivity,
 } from "@/lib/grid";
 import { cn } from "@/lib/utils";
@@ -58,15 +59,6 @@ type PendingPlacement = {
     startTime: number;
     endTime: number;
 };
-
-function formatMinutes(minutes: number) {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-
-    return `${hours.toString().padStart(2, "0")}:${mins
-        .toString()
-        .padStart(2, "0")}`;
-}
 
 function clamp(value: number, min: number, max: number) {
     return Math.min(Math.max(value, min), max);
@@ -272,23 +264,6 @@ export default function ScheduleGrid({
         [user.templates],
     );
     const canPlaceActivity = templateOptions.length > 0;
-
-    const timeOptions = useMemo(() => {
-        const options: { value: string; label: string }[] = [];
-
-        for (
-            let minutes = startTime;
-            minutes <= endTime;
-            minutes += slotDuration
-        ) {
-            options.push({
-                value: String(minutes),
-                label: formatMinutes(minutes),
-            });
-        }
-
-        return options;
-    }, [endTime, slotDuration, startTime]);
 
     const notesByActivity = useMemo(() => {
         return Object.values(schedule.notes).reduce<Record<string, Note[]>>(
@@ -868,7 +843,6 @@ export default function ScheduleGrid({
                         }
                     }}
                     templateOptions={templateOptions}
-                    timeOptions={timeOptions}
                     initialData={{
                         templateId: "",
                         day: pendingPlacement.day,
@@ -888,7 +862,6 @@ export default function ScheduleGrid({
                         }
                     }}
                     templateOptions={templateOptions}
-                    timeOptions={timeOptions}
                     placedId={selectedActivity.placedId}
                     initialData={{
                         templateId: selectedActivity.templateId,

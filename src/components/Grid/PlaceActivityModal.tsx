@@ -1,6 +1,7 @@
-import { useCallback, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { Check, ChevronDown, Plus, Trash2, X } from "lucide-react";
 
+import TimeChooser from "@/components/Inputs/TimeChooser/TimeChooser";
 import { AlertModal } from "@/components/Modals/AlertModal/AlertModal";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,7 +17,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, type SelectOption } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useScheduleContext } from "@/context/hooks";
 import { COLOR_OPTIONS } from "@/fieldConfigs";
+import {
+    END_OF_DAY_MINUTES,
+    formatMinutes,
+    isTimeWithinRange,
+    TIME_MINUTE_STEP,
+} from "@/lib/grid";
 import type {
     ActivityNoteDraft,
     ActivityNoteInput,
@@ -58,7 +66,6 @@ type SharedDialogProps = {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     templateOptions: SelectOption[];
-    timeOptions: SelectOption[];
     initialData?: PlacedActivityDialogInitialData;
 };
 
@@ -79,7 +86,6 @@ type PlacedActivityDialogProps = AddDialogProps | EditDialogProps;
 type PlaceActivityModalProps = {
     children: ReactNode;
     templateOptions: SelectOption[];
-    timeOptions: SelectOption[];
     onSubmit: (data: PlacedActivityDraft) => void;
 };
 
@@ -87,7 +93,6 @@ type AddPlacedActivityModalProps = {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     templateOptions: SelectOption[];
-    timeOptions: SelectOption[];
     initialData?: PlacedActivityDialogInitialData;
     onSubmit: (data: PlacedActivityDraft) => void;
 };
@@ -96,7 +101,6 @@ type EditPlacedActivityModalProps = {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     templateOptions: SelectOption[];
-    timeOptions: SelectOption[];
     placedId: string;
     initialData: PlacedActivityDialogInitialData;
     onSubmit: (data: SavePlacedActivityPayload) => void;
@@ -116,20 +120,17 @@ const EMPTY_NOTE_DRAFT: ActivityNoteDraft = {
     color: "slate",
 };
 
-function formatMinutes(minutes: number) {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-
-    return `${hours.toString().padStart(2, "0")}:${mins
-        .toString()
-        .padStart(2, "0")}`;
-}
-
 function buildInitialFormState(
+    defaultStartTime: number,
+    defaultEndTime: number,
     initialData?: PlacedActivityDialogInitialData
 ): PlacedActivityFormState {
     if (!initialData) {
-        return EMPTY_FORM_STATE;
+        return {
+            ...EMPTY_FORM_STATE,
+            startTime: String(defaultStartTime),
+            endTime: String(defaultEndTime),
+        };
     }
 
     return {
@@ -162,30 +163,6 @@ function toActivityNoteInput(note: EditableActivityNote): ActivityNoteInput {
     };
 }
 
-function mergeTimeOptions(
-    timeOptions: SelectOption[],
-    initialData?: PlacedActivityDialogInitialData
-): SelectOption[] {
-    const nextOptions = new Map(timeOptions.map((option) => [option.value, option]));
-
-    if (initialData) {
-        [initialData.startTime, initialData.endTime].forEach((minutes) => {
-            const value = String(minutes);
-
-            if (!nextOptions.has(value)) {
-                nextOptions.set(value, {
-                    value,
-                    label: formatMinutes(minutes),
-                });
-            }
-        });
-    }
-
-    return Array.from(nextOptions.values()).sort(
-        (left, right) => Number(left.value) - Number(right.value)
-    );
-}
-
 function buildAddDialogKey(
     open: boolean,
     initialData?: PlacedActivityDialogInitialData
@@ -200,20 +177,76 @@ function buildAddDialogKey(
 }
 
 function PlacedActivityDialogContent(props: PlacedActivityDialogProps) {
-    const { initialData, mode, onOpenChange, templateOptions, timeOptions } = props;
+    const { initialData, mode, onOpenChange, templateOptions } = props;
+    const schedule = useScheduleContext();
+    const defaultStartTime = schedule.grid.startTime;
+    const defaultEndTime = Math.min(
+        schedule.grid.startTime + schedule.grid.slotDuration,
+        END_OF_DAY_MINUTES
+    );
     const [formState, setFormState] = useState<PlacedActivityFormState>(() =>
-        buildInitialFormState(initialData)
+        buildInitialFormState(defaultStartTime, defaultEndTime, initialData)
     );
     const [notes, setNotes] = useState<EditableActivityNote[]>(() =>
         buildEditableNotes(initialData?.notes)
     );
     const [notesOpen, setNotesOpen] = useState(Boolean(initialData?.notes?.length));
     const [error, setError] = useState<string | null>(null);
-
-    const availableTimeOptions = useMemo(
-        () => mergeTimeOptions(timeOptions, initialData),
-        [initialData, timeOptions]
+    const startTimeValue = Number(formState.startTime);
+    const endTimeValue = Number(formState.endTime);
+    const maxStartTime = Math.max(0, endTimeValue - TIME_MINUTE_STEP);
+    const minEndTime = Math.min(
+        END_OF_DAY_MINUTES,
+        startTimeValue + TIME_MINUTE_STEP
     );
+    const showVisibleRangeHint =
+        !isTimeWithinRange(
+            startTimeValue,
+            schedule.grid.startTime,
+            schedule.grid.endTime
+        ) ||
+        !isTimeWithinRange(
+            endTimeValue,
+            schedule.grid.startTime,
+            schedule.grid.endTime
+        );
+
+    useEffect(() => {
+        if (!Number.isFinite(startTimeValue) || !Number.isFinite(endTimeValue)) {
+            return;
+        }
+
+        if (endTimeValue > startTimeValue) {
+            return;
+        }
+
+        const nextStartTime = Math.min(
+            startTimeValue,
+            END_OF_DAY_MINUTES - TIME_MINUTE_STEP
+        );
+        const nextEndTime = Math.min(
+            END_OF_DAY_MINUTES,
+            nextStartTime + TIME_MINUTE_STEP
+        );
+
+        setFormState((currentState) => {
+            const normalizedStartTime = String(nextStartTime);
+            const normalizedEndTime = String(nextEndTime);
+
+            if (
+                currentState.startTime === normalizedStartTime &&
+                currentState.endTime === normalizedEndTime
+            ) {
+                return currentState;
+            }
+
+            return {
+                ...currentState,
+                startTime: normalizedStartTime,
+                endTime: normalizedEndTime,
+            };
+        });
+    }, [endTimeValue, startTimeValue]);
 
     const handleFormChange = useCallback(
         (field: keyof PlacedActivityFormState, value: string) => {
@@ -223,6 +256,20 @@ function PlacedActivityDialogContent(props: PlacedActivityDialogProps) {
             }));
         },
         []
+    );
+
+    const handleStartTimeChange = useCallback(
+        (value: number) => {
+            handleFormChange("startTime", String(Math.min(value, maxStartTime)));
+        },
+        [handleFormChange, maxStartTime]
+    );
+
+    const handleEndTimeChange = useCallback(
+        (value: number) => {
+            handleFormChange("endTime", String(Math.max(value, minEndTime)));
+        },
+        [handleFormChange, minEndTime]
     );
 
     const handleAddNote = useCallback(() => {
@@ -375,40 +422,42 @@ function PlacedActivityDialogContent(props: PlacedActivityDialogProps) {
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                        <Label htmlFor="placed-activity-start-time">
+                        <Label htmlFor="placed-activity-start-time-hours">
                             Start time
                             <span className="ml-1 text-destructive">*</span>
                         </Label>
-                        <Select
+                        <TimeChooser
                             id="placed-activity-start-time"
-                            name="startTime"
-                            value={formState.startTime}
-                            onValueChange={(value) =>
-                                handleFormChange("startTime", value)
-                            }
-                            options={availableTimeOptions.slice(0, -1)}
-                            placeholder="Choose a start time"
-                            required
+                            value={startTimeValue}
+                            onValueChange={handleStartTimeChange}
+                            maxMinutes={maxStartTime}
+                            tone="start"
                         />
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                        <Label htmlFor="placed-activity-end-time">
+                        <Label htmlFor="placed-activity-end-time-hours">
                             End time
                             <span className="ml-1 text-destructive">*</span>
                         </Label>
-                        <Select
+                        <TimeChooser
                             id="placed-activity-end-time"
-                            name="endTime"
-                            value={formState.endTime}
-                            onValueChange={(value) =>
-                                handleFormChange("endTime", value)
-                            }
-                            options={availableTimeOptions.slice(1)}
-                            placeholder="Choose an end time"
-                            required
+                            value={endTimeValue}
+                            onValueChange={handleEndTimeChange}
+                            minMinutes={minEndTime}
+                            maxMinutes={END_OF_DAY_MINUTES}
+                            tone="end"
                         />
                     </div>
+
+                    {showVisibleRangeHint ? (
+                        <p className="app-time-range-hint md:col-span-2">
+                            This activity extends beyond the visible grid window of{" "}
+                            {formatMinutes(schedule.grid.startTime)} to{" "}
+                            {formatMinutes(schedule.grid.endTime)}. Adjust the visible
+                            hours if you want to see the full block in the grid.
+                        </p>
+                    ) : null}
                 </div>
 
                 <div className="app-associated-notes">
@@ -608,7 +657,6 @@ export function EditPlacedActivityModal({
     open,
     placedId,
     templateOptions,
-    timeOptions,
 }: EditPlacedActivityModalProps) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -618,7 +666,6 @@ export function EditPlacedActivityModal({
                 open={open}
                 onOpenChange={onOpenChange}
                 templateOptions={templateOptions}
-                timeOptions={timeOptions}
                 placedId={placedId}
                 initialData={initialData}
                 onSubmit={onSubmit}
@@ -634,7 +681,6 @@ export function AddPlacedActivityModal({
     onSubmit,
     open,
     templateOptions,
-    timeOptions,
 }: AddPlacedActivityModalProps) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -644,7 +690,6 @@ export function AddPlacedActivityModal({
                 open={open}
                 onOpenChange={onOpenChange}
                 templateOptions={templateOptions}
-                timeOptions={timeOptions}
                 initialData={initialData}
                 onSubmit={onSubmit}
             />
@@ -655,7 +700,6 @@ export function AddPlacedActivityModal({
 export default function PlaceActivityModal({
     children,
     templateOptions,
-    timeOptions,
     onSubmit,
 }: PlaceActivityModalProps) {
     const [isOpen, setIsOpen] = useState(false);
@@ -669,7 +713,6 @@ export default function PlaceActivityModal({
                 open={isOpen}
                 onOpenChange={setIsOpen}
                 templateOptions={templateOptions}
-                timeOptions={timeOptions}
                 onSubmit={onSubmit}
             />
         </Dialog>

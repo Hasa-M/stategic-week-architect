@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weekly Flow Studio</title>
+<style>
+@font-face {
+  font-family: "DM Sans";
+  src: url("../../fonts/DMSans-VariableFont_opsz_wght.ttf") format("truetype");
+  font-weight: 100 1000; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "DM Sans";
+  src: url("../../fonts/DMSans-Italic-VariableFont_opsz_wght.ttf") format("truetype");
+  font-weight: 100 1000; font-style: italic; font-display: swap;
+}
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body, #root { height: 100%; }
+body {
+  font-family: "DM Sans", sans-serif;
+  background: var(--bg-body);
+  color: var(--text);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Light theme ── */
+:root {
+  --primary:        #0891b2;
+  --primary-hover:  #0e7490;
+  --on-primary:     #fff;
+  --destructive:    #dc2626;
+
+  --bg-body:        linear-gradient(160deg, #f6faff 0%, #eef4ff 50%, #edf2ff 100%);
+  --bg-page:        #f5f8ff;
+  --surface:        rgba(255,255,255,0.78);
+  --surface-solid:  #ffffff;
+  --surface-muted:  rgba(248,251,255,0.82);
+
+  --text:           #334155;
+  --text-strong:    #0f172a;
+  --text-soft:      #4b5e75;
+  --text-muted:     #6b7d93;
+  --text-subtle:    #96a8bb;
+
+  --border:         rgba(8,145,178,0.10);
+  --border-medium:  rgba(8,145,178,0.18);
+  --border-soft:    rgba(255,255,255,0.7);
+
+  --shadow-xs:      0 1px 3px rgba(15,23,42,0.04), 0 1px 2px rgba(15,23,42,0.03);
+  --shadow-sm:      0 2px 8px rgba(15,23,42,0.05), 0 1px 3px rgba(15,23,42,0.04);
+  --shadow-md:      0 4px 16px rgba(15,23,42,0.06), 0 1px 4px rgba(15,23,42,0.04);
+  --shadow-lg:      0 8px 28px rgba(15,23,42,0.07), 0 2px 8px rgba(15,23,42,0.04);
+
+  --scrollbar:      rgba(8,145,178,0.22);
+}
+
+/* ── Dark theme ── */
+[data-theme="dark"] {
+  --primary:        #22d3ee;
+  --primary-hover:  #06b6d4;
+  --on-primary:     #04121e;
+
+  --bg-body:        linear-gradient(160deg, #0f1e2e 0%, #111c2d 60%, #101828 100%);
+  --bg-page:        #0f1e2e;
+  --surface:        rgba(22,36,54,0.82);
+  --surface-solid:  #1a2840;
+  --surface-muted:  rgba(17,29,45,0.86);
+
+  --text:           #dce9f5;
+  --text-strong:    #f0f7ff;
+  --text-soft:      #bfcfde;
+  --text-muted:     #8fa5bc;
+  --text-subtle:    #5f7d96;
+
+  --border:         rgba(103,232,249,0.10);
+  --border-medium:  rgba(103,232,249,0.18);
+  --border-soft:    rgba(255,255,255,0.06);
+
+  --shadow-xs:      0 1px 3px rgba(0,0,0,0.18);
+  --shadow-sm:      0 2px 8px rgba(0,0,0,0.22);
+  --shadow-md:      0 4px 16px rgba(0,0,0,0.26);
+  --shadow-lg:      0 8px 28px rgba(0,0,0,0.32);
+
+  --scrollbar:      rgba(34,211,238,0.22);
+}
+
+::selection { background: rgba(8,145,178,0.14); color: var(--text-strong); }
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 999px; }
+
+/* Activity color vars */
+.act-cyan    { --ac-solid:#0891b2; --ac-soft:rgba(8,145,178,0.08);  --ac-text:#0c6a82; --ac-border:rgba(8,145,178,0.18); }
+.act-emerald { --ac-solid:#059669; --ac-soft:rgba(5,150,105,0.08);  --ac-text:#07725a; --ac-border:rgba(5,150,105,0.18); }
+.act-violet  { --ac-solid:#7c3aed; --ac-soft:rgba(124,58,237,0.08); --ac-text:#6527c9; --ac-border:rgba(124,58,237,0.18); }
+.act-blue    { --ac-solid:#2563eb; --ac-soft:rgba(37,99,235,0.08);  --ac-text:#1a4ecb; --ac-border:rgba(37,99,235,0.18); }
+.act-amber   { --ac-solid:#d97706; --ac-soft:rgba(217,119,6,0.08);  --ac-text:#b45309; --ac-border:rgba(217,119,6,0.18); }
+.act-red     { --ac-solid:#dc2626; --ac-soft:rgba(220,38,38,0.08);  --ac-text:#b91c1c; --ac-border:rgba(220,38,38,0.18); }
+.act-pink    { --ac-solid:#db2777; --ac-soft:rgba(219,39,119,0.08); --ac-text:#be185d; --ac-border:rgba(219,39,119,0.18); }
+.act-slate   { --ac-solid:#475569; --ac-soft:rgba(71,85,105,0.08);  --ac-text:#374558; --ac-border:rgba(71,85,105,0.18); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useMemo } = React;
+
+/* ── colour helpers ──────────────────────────────────── */
+const AC = {
+  cyan:    { solid:"#0891b2", soft:"rgba(8,145,178,0.08)",   text:"#0c6a82", border:"rgba(8,145,178,0.18)" },
+  emerald: { solid:"#059669", soft:"rgba(5,150,105,0.08)",   text:"#076d52", border:"rgba(5,150,105,0.18)" },
+  violet:  { solid:"#7c3aed", soft:"rgba(124,58,237,0.08)",  text:"#6527c9", border:"rgba(124,58,237,0.18)" },
+  blue:    { solid:"#2563eb", soft:"rgba(37,99,235,0.08)",   text:"#1a4ecb", border:"rgba(37,99,235,0.18)" },
+  amber:   { solid:"#d97706", soft:"rgba(217,119,6,0.08)",   text:"#b45309", border:"rgba(217,119,6,0.18)" },
+  red:     { solid:"#dc2626", soft:"rgba(220,38,38,0.08)",   text:"#b91c1c", border:"rgba(220,38,38,0.18)" },
+  pink:    { solid:"#db2777", soft:"rgba(219,39,119,0.08)",  text:"#be185d", border:"rgba(219,39,119,0.18)" },
+  slate:   { solid:"#475569", soft:"rgba(71,85,105,0.08)",   text:"#374558", border:"rgba(71,85,105,0.18)" },
+};
+const ac = c => AC[c] || AC.slate;
+
+/* ── seed data ───────────────────────────────────────── */
+const TEMPLATES = [
+  { id:"t1", title:"Deep Work",  color:"cyan",    desc:"Focused, distraction-free sessions" },
+  { id:"t2", title:"Exercise",   color:"emerald", desc:"Physical activity" },
+  { id:"t3", title:"Reading",    color:"violet",  desc:"Books, articles, research" },
+  { id:"t4", title:"Team Sync",  color:"blue",    desc:"Meetings and collaboration" },
+  { id:"t5", title:"Planning",   color:"amber",   desc:"Weekly and daily planning" },
+];
+
+const PLACED_INIT = [
+  { id:"p1", tId:"t1", day:"Mon", s:9,  e:11, title:"Deep Work",  color:"cyan" },
+  { id:"p2", tId:"t2", day:"Mon", s:7,  e:8,  title:"Exercise",   color:"emerald" },
+  { id:"p3", tId:"t4", day:"Tue", s:10, e:11, title:"Team Sync",  color:"blue" },
+  { id:"p4", tId:"t1", day:"Wed", s:9,  e:12, title:"Deep Work",  color:"cyan" },
+  { id:"p5", tId:"t3", day:"Thu", s:14, e:15, title:"Reading",    color:"violet" },
+  { id:"p6", tId:"t5", day:"Fri", s:8,  e:9,  title:"Planning",   color:"amber" },
+];
+
+const NOTES_INIT = [
+  { id:"n1", title:"Deep Work tips",  body:"Block notifications. Start with the hardest task first.", color:"cyan" },
+  { id:"n2", title:"Reading list",    body:"Atomic Habits · Deep Work · The Pragmatic Programmer",   color:"violet" },
+];
+
+const DAYS  = ["Mon","Tue","Wed","Thu","Fri"];
+const HOURS = Array.from({length:13},(_,i)=>i+8);
+
+/* ── shared primitives ───────────────────────────────── */
+function Icon({ d, size=15 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d={d}/>
+    </svg>
+  );
+}
+const Icons = {
+  grid:  "M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z",
+  note:  "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8",
+  chart: "M18 20V10M12 20V4M6 20v-6",
+  x:     "M18 6L6 18M6 6l12 12",
+  plus:  "M12 5v14M5 12h14",
+  check: "M20 6L9 17l-5-5",
+  menu:  "M3 12h18M3 6h18M3 18h18",
+};
+
+function Chip({ label, color, onRemove }) {
+  const c = ac(color);
+  return (
+    <span style={{
+      display:"inline-flex",alignItems:"center",gap:6,
+      background:c.soft,border:`1px solid ${c.border}`,
+      borderRadius:8,padding:"5px 9px",
+      fontSize:12,fontWeight:600,color:c.text,
+      transition:"opacity 160ms",
+    }}>
+      <span style={{width:6,height:6,borderRadius:"50%",background:c.solid,flexShrink:0}}/>
+      {label}
+      {onRemove && (
+        <button onClick={onRemove} style={{
+          border:"none",background:"none",cursor:"pointer",
+          color:c.text,opacity:0.4,padding:0,display:"flex",lineHeight:1,
+          fontSize:11,
+        }}>✕</button>
+      )}
+    </span>
+  );
+}
+
+function Btn({ children, variant="primary", size="md", onClick, disabled, style: sx }) {
+  const base = {
+    display:"inline-flex",alignItems:"center",justifyContent:"center",
+    gap:6,cursor:disabled?"not-allowed":"pointer",
+    fontFamily:"DM Sans, sans-serif",fontWeight:600,
+    border:"none",transition:"all 160ms ease",opacity:disabled?0.45:1,
+    letterSpacing:"0.01em",
+  };
+  const sz = {
+    sm: { fontSize:12, height:30, padding:"0 11px", borderRadius:8 },
+    md: { fontSize:13, height:36, padding:"0 14px", borderRadius:10 },
+    lg: { fontSize:14, height:40, padding:"0 18px", borderRadius:12 },
+    icon:{ fontSize:13, width:34, height:34, padding:0, borderRadius:9 },
+  }[size];
+  const vr = {
+    primary: { background:"var(--primary)",color:"var(--on-primary)",boxShadow:"0 2px 8px rgba(8,145,178,0.20)" },
+    outline: { background:"var(--surface)",color:"var(--text)",border:"1px solid var(--border-medium)",boxShadow:"var(--shadow-xs)" },
+    ghost:   { background:"transparent",color:"var(--text-muted)",boxShadow:"none" },
+    subtle:  { background:"var(--surface-muted)",color:"var(--text-soft)",boxShadow:"var(--shadow-xs)",border:"1px solid var(--border)" },
+  }[variant];
+  return (
+    <button onClick={onClick} disabled={disabled} style={{...base,...sz,...vr,...sx}}>
+      {children}
+    </button>
+  );
+}
+
+/* ── App ─────────────────────────────────────────────── */
+function App() {
+  const [theme, setTheme]           = useState(()=>localStorage.getItem("wfs-ds-theme")||"light");
+  const [templates, setTemplates]   = useState(TEMPLATES);
+  const [placed, setPlaced]         = useState(PLACED_INIT);
+  const [notes]                     = useState(NOTES_INIT);
+  const [showTpl, setShowTpl]       = useState(false);
+  const [sideTab, setSideTab]       = useState("summary");
+  const [mobileTab, setMobileTab]   = useState("grid");
+  const [modal, setModal]           = useState(null); // {day,hour}
+  const [ww, setWw]                 = useState(window.innerWidth);
+
+  useEffect(()=>{
+    localStorage.setItem("wfs-ds-theme",theme);
+    document.documentElement.setAttribute("data-theme",theme);
+  },[theme]);
+
+  useEffect(()=>{
+    const h=()=>setWw(window.innerWidth);
+    window.addEventListener("resize",h);
+    return ()=>window.removeEventListener("resize",h);
+  },[]);
+
+  const layout = ww>=1240?"desktop":ww>=760?"tablet":"mobile";
+
+  const metrics = useMemo(()=>({
+    hours:   placed.reduce((s,p)=>s+(p.e-p.s),0),
+    busiest: (()=>{
+      const m={};placed.forEach(p=>{m[p.day]=(m[p.day]||0)+(p.e-p.s);});
+      return Object.entries(m).sort((a,b)=>b[1]-a[1])[0]?.[0]||"—";
+    })(),
+    count: placed.length,
+    tpl:   templates.length,
+    notes: notes.length,
+  }),[placed,templates,notes]);
+
+  const place = (tId,day,hour) => {
+    const tpl = templates.find(t=>t.id===tId);
+    if(!tpl) return;
+    setPlaced(p=>[...p,{id:"p"+Date.now(),tId,day,s:hour,e:hour+1,title:tpl.title,color:tpl.color}]);
+    setModal(null);
+  };
+
+  return (
+    <div style={{display:"flex",flexDirection:"column",height:"100dvh",background:"var(--bg-body)"}}>
+      <Header
+        theme={theme} setTheme={setTheme}
+        layout={layout}
+        showTpl={showTpl} onToggleTpl={()=>setShowTpl(v=>!v)}
+        tplCount={templates.length}
+      />
+
+      {showTpl && (
+        <div style={{padding:"8px 18px 0",flexShrink:0}}>
+          <TplBar
+            templates={templates}
+            onClose={()=>setShowTpl(false)}
+            onDelete={id=>setTemplates(p=>p.filter(t=>t.id!==id))}
+          />
+        </div>
+      )}
+
+      <div style={{flex:1,minHeight:0,display:"flex",gap:12,padding:"10px 18px 14px",overflow:"hidden"}}>
+        <main style={{flex:1,minWidth:0,display:"flex",flexDirection:"column",gap:10,overflow:"hidden"}}>
+          {(layout!=="mobile"||mobileTab==="grid") && (
+            <GridSection
+              placed={placed}
+              onCell={(d,h)=>setModal({day:d,hour:h})}
+              onRemove={id=>setPlaced(p=>p.filter(x=>x.id!==id))}
+            />
+          )}
+          {layout==="mobile"&&mobileTab!=="grid"&&(
+            <SidePanel
+              tab={mobileTab==="notes"?"notes":"summary"}
+              notes={notes} metrics={metrics} placed={placed}
+            />
+          )}
+        </main>
+        {layout==="desktop" && (
+          <aside style={{width:"clamp(260px,26vw,340px)",flexShrink:0,display:"flex",flexDirection:"column"}}>
+            <SidePanel tab={sideTab} onTabChange={setSideTab} notes={notes} metrics={metrics} placed={placed} showTabs />
+          </aside>
+        )}
+      </div>
+
+      {layout==="mobile"&&<MobileNav tab={mobileTab} onChange={setMobileTab}/>}
+
+      {modal && (
+        <PlaceModal
+          templates={templates}
+          cell={modal}
+          onPlace={place}
+          onClose={()=>setModal(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+/* ── Header ──────────────────────────────────────────── */
+function Header({ theme, setTheme, layout, showTpl, onToggleTpl }) {
+  const themes = [
+    { id:"light",         icon:"☀" },
+    { id:"high-contrast", icon:"◑" },
+    { id:"dark",          icon:"☾" },
+  ];
+  return (
+    <header style={{
+      flexShrink:0,
+      height:48,
+      display:"flex",alignItems:"center",
+      padding:"0 18px",
+      borderBottom:"1px solid var(--border)",
+      background:"var(--surface)",
+      backdropFilter:"blur(12px)",
+      boxShadow:"var(--shadow-xs)",
+      gap:12,
+      position:"relative",zIndex:20,
+    }}>
+      {/* Brand */}
+      <div style={{display:"flex",alignItems:"center",gap:9,flex:"0 0 auto"}}>
+        <div style={{
+          width:30,height:30,borderRadius:10,flexShrink:0,
+          border:"1px solid var(--border-medium)",
+          background:"var(--surface-solid)",
+          boxShadow:"var(--shadow-xs)",
+          display:"flex",alignItems:"center",justifyContent:"center",
+          overflow:"hidden",padding:4,
+        }}>
+          <img src="../../assets/logo.svg" alt="" style={{width:"100%",height:"100%",objectFit:"contain",mixBlendMode:"multiply"}}/>
+        </div>
+        <div style={{display:"flex",flexDirection:"column",gap:1.5}}>
+          <span style={{fontSize:13,fontWeight:700,letterSpacing:"0.01em",color:"var(--text-strong)",lineHeight:1}}>
+            {layout==="mobile"?"Weekly Flow":"Weekly Flow Studio"}
+          </span>
+          <span style={{fontSize:10,fontWeight:500,letterSpacing:"0.04em",color:"var(--text-subtle)",lineHeight:1,textTransform:"uppercase"}}>
+            Simple planning
+          </span>
+        </div>
+      </div>
+
+      <div style={{flex:1}}/>
+
+      {/* Controls */}
+      <div style={{display:"flex",alignItems:"center",gap:6}}>
+        {/* Theme */}
+        <div style={{
+          display:"flex",alignItems:"center",
+          background:"var(--surface-muted)",
+          border:"1px solid var(--border)",
+          borderRadius:9,padding:3,gap:2,
+        }}>
+          {themes.map(t=>(
+            <button key={t.id} onClick={()=>setTheme(t.id)} style={{
+              border:"none",borderRadius:6,width:26,height:26,
+              display:"flex",alignItems:"center",justifyContent:"center",
+              background: theme===t.id ? "var(--primary)" : "transparent",
+              color: theme===t.id ? "var(--on-primary)" : "var(--text-muted)",
+              cursor:"pointer",fontSize:12,transition:"all 160ms ease",
+              boxShadow: theme===t.id ? "0 1px 4px rgba(8,145,178,0.25)" : "none",
+            }}>{t.icon}</button>
+          ))}
+        </div>
+
+        <Btn variant={showTpl?"primary":"outline"} size="sm" onClick={onToggleTpl}>
+          Templates {showTpl?"↑":"↓"}
+        </Btn>
+      </div>
+    </header>
+  );
+}
+
+/* ── Templates bar ───────────────────────────────────── */
+function TplBar({ templates, onClose, onDelete }) {
+  return (
+    <div style={{
+      border:"1px solid var(--border)",
+      borderRadius:14,
+      background:"var(--surface-muted)",
+      padding:"11px 14px",
+      display:"flex",alignItems:"center",gap:10,flexWrap:"wrap",
+    }}>
+      <div style={{display:"flex",flexDirection:"column",gap:1,marginRight:4}}>
+        <span style={{fontSize:12,fontWeight:700,color:"var(--text-strong)"}}>Templates</span>
+        <span style={{fontSize:11,color:"var(--text-muted)"}}>Reusable activities</span>
+      </div>
+      {templates.map(t=>(
+        <Chip key={t.id} label={t.title} color={t.color} onRemove={()=>onDelete(t.id)}/>
+      ))}
+      <div style={{marginLeft:"auto",flexShrink:0}}>
+        <Btn variant="ghost" size="icon" onClick={onClose}>
+          <Icon d={Icons.x} size={14}/>
+        </Btn>
+      </div>
+    </div>
+  );
+}
+
+/* ── Grid section ────────────────────────────────────── */
+function GridSection({ placed, onCell, onRemove }) {
+  return (
+    <div style={{flex:1,minHeight:0,display:"flex",flexDirection:"column",gap:8}}>
+      {/* Toolbar */}
+      <div style={{
+        display:"flex",alignItems:"center",gap:6,flexShrink:0,flexWrap:"wrap",
+        padding:"8px 12px",
+        background:"var(--surface)",
+        border:"1px solid var(--border)",
+        borderRadius:12,
+        boxShadow:"var(--shadow-xs)",
+      }}>
+        <span style={{fontSize:11,fontWeight:600,letterSpacing:"0.10em",textTransform:"uppercase",color:"var(--text-subtle)"}}>Week</span>
+        {/* Slot size */}
+        <div style={{display:"flex",gap:2,background:"var(--surface-muted)",border:"1px solid var(--border)",borderRadius:7,padding:2}}>
+          {["30m","1h"].map((s,i)=>(
+            <button key={s} style={{
+              border:"none",borderRadius:5,background:i===1?"var(--primary)":"transparent",
+              height:24,padding:"0 9px",fontSize:11,fontWeight:600,
+              color:i===1?"var(--on-primary)":"var(--text-muted)",cursor:"pointer",
+              fontFamily:"inherit",transition:"all 160ms ease",
+            }}>{s}</button>
+          ))}
+        </div>
+        <span style={{fontSize:11,color:"var(--text-subtle)",fontWeight:400}}>8:00–20:00</span>
+        <div style={{flex:1}}/>
+        <Btn size="sm" onClick={()=>{}}>
+          <Icon d={Icons.plus} size={13}/>
+          Add activity
+        </Btn>
+      </div>
+
+      {/* Grid */}
+      <div style={{
+        flex:1,minHeight:0,
+        border:"1px solid var(--border)",
+        borderRadius:14,
+        overflow:"auto",
+        background:"var(--surface)",
+        boxShadow:"var(--shadow-sm)",
+      }}>
+        <WeekGrid placed={placed} onCell={onCell} onRemove={onRemove}/>
+      </div>
+    </div>
+  );
+}
+
+function WeekGrid({ placed, onCell, onRemove }) {
+  const SLOT = 42;
+  return (
+    <div style={{display:"grid",gridTemplateColumns:"44px repeat(5,1fr)",minWidth:440,fontSize:11}}>
+      {/* Header */}
+      <div style={{background:"var(--surface)",borderBottom:"1px solid var(--border)",position:"sticky",top:0,zIndex:2}}/>
+      {DAYS.map(d=>(
+        <div key={d} style={{
+          background:"var(--surface)",borderBottom:"1px solid var(--border)",
+          borderLeft:"1px solid var(--border)",
+          padding:"7px 0",textAlign:"center",
+          fontWeight:600,color:"var(--text-soft)",
+          letterSpacing:"0.05em",position:"sticky",top:0,zIndex:2,
+        }}>{d}</div>
+      ))}
+      {/* Rows */}
+      {HOURS.map(h=>(
+        <React.Fragment key={h}>
+          <div style={{
+            height:SLOT,background:"var(--surface-muted)",
+            borderBottom:"1px solid var(--border)",
+            display:"flex",alignItems:"flex-start",justifyContent:"flex-end",
+            padding:"4px 8px 0",color:"var(--text-subtle)",fontWeight:500,fontSize:10,flexShrink:0,
+          }}>{h}:00</div>
+          {DAYS.map(d=>{
+            const here = placed.filter(p=>p.day===d&&p.s===h);
+            return (
+              <div key={d}
+                onClick={()=>onCell(d,h)}
+                style={{
+                  height:SLOT,
+                  borderBottom:"1px solid var(--border)",borderLeft:"1px solid var(--border)",
+                  position:"relative",cursor:"pointer",
+                  transition:"background 120ms",
+                }}
+                onMouseEnter={e=>e.currentTarget.style.background="rgba(8,145,178,0.04)"}
+                onMouseLeave={e=>e.currentTarget.style.background="transparent"}
+              >
+                {here.map(p=>{
+                  const c=ac(p.color), span=p.e-p.s;
+                  return (
+                    <div key={p.id} onClick={e=>e.stopPropagation()} style={{
+                      position:"absolute",top:3,left:3,right:3,
+                      height: SLOT*span-6,
+                      background:c.soft,border:`1px solid ${c.border}`,borderRadius:8,
+                      padding:"4px 7px",zIndex:1,display:"flex",flexDirection:"column",justifyContent:"space-between",
+                    }}>
+                      <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:3}}>
+                        <span style={{fontSize:11,fontWeight:700,color:c.text,lineHeight:1.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.title}</span>
+                        <button onClick={()=>onRemove(p.id)} style={{border:"none",background:"none",cursor:"pointer",color:c.text,opacity:0.35,fontSize:10,padding:0,lineHeight:1,flexShrink:0}}>✕</button>
+                      </div>
+                      {span>1&&<span style={{fontSize:10,color:c.text,opacity:0.55}}>{p.s}–{p.e}</span>}
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </React.Fragment>
+      ))}
+    </div>
+  );
+}
+
+/* ── Sidebar / panel ─────────────────────────────────── */
+function SidePanel({ tab, onTabChange, notes, metrics, placed, showTabs }) {
+  return (
+    <div style={{
+      flex:1,display:"flex",flexDirection:"column",
+      border:"1px solid var(--border)",borderRadius:16,
+      background:"var(--surface)",boxShadow:"var(--shadow-sm)",
+      overflow:"hidden",
+    }}>
+      {showTabs&&(
+        <div style={{display:"flex",gap:4,padding:"10px 12px 0",flexShrink:0}}>
+          {["summary","notes"].map(t=>(
+            <button key={t} onClick={()=>onTabChange(t)} style={{
+              flex:1,height:30,border:"none",borderRadius:8,cursor:"pointer",
+              fontFamily:"DM Sans,sans-serif",fontSize:12,fontWeight:600,
+              background: tab===t ? "var(--primary)" : "var(--surface-muted)",
+              color: tab===t ? "var(--on-primary)" : "var(--text-muted)",
+              textTransform:"capitalize",transition:"all 160ms ease",
+              boxShadow: tab===t ? "0 2px 8px rgba(8,145,178,0.18)" : "none",
+              border: tab!==t ? "1px solid var(--border)" : "none",
+            }}>{t}</button>
+          ))}
+        </div>
+      )}
+      <div style={{flex:1,overflow:"auto",padding:"14px 14px"}}>
+        {tab==="summary"
+          ? <Summary metrics={metrics} placed={placed}/>
+          : <Notes notes={notes}/>
+        }
+      </div>
+    </div>
+  );
+}
+
+function Summary({ metrics, placed }) {
+  const stats = [
+    { v:metrics.hours+"h", l:"Planned" },
+    { v:metrics.busiest,   l:"Busiest day" },
+    { v:metrics.tpl,       l:"Templates" },
+    { v:metrics.notes,     l:"Notes" },
+  ];
+  return (
+    <div style={{display:"flex",flexDirection:"column",gap:14}}>
+      <SectionLabel>Summary</SectionLabel>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7}}>
+        {stats.map(s=>(
+          <div key={s.l} style={{
+            background:"var(--surface-muted)",border:"1px solid var(--border)",
+            borderRadius:12,padding:"11px 12px",
+          }}>
+            <div style={{fontSize:20,fontWeight:700,color:"var(--text-strong)",lineHeight:1,letterSpacing:"-0.02em"}}>{s.v}</div>
+            <div style={{fontSize:11,color:"var(--text-muted)",marginTop:4,fontWeight:500}}>{s.l}</div>
+          </div>
+        ))}
+      </div>
+      <SectionLabel>Placed activities</SectionLabel>
+      <div style={{display:"flex",flexDirection:"column",gap:5}}>
+        {placed.slice(0,6).map(p=>{
+          const c=ac(p.color);
+          return (
+            <div key={p.id} style={{
+              display:"flex",alignItems:"center",gap:8,
+              padding:"7px 10px",borderRadius:10,
+              border:`1px solid ${c.border}`,background:c.soft,
+            }}>
+              <span style={{width:7,height:7,borderRadius:"50%",background:c.solid,flexShrink:0}}/>
+              <span style={{fontSize:12,fontWeight:600,color:c.text,flex:1,minWidth:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.title}</span>
+              <span style={{fontSize:10,color:c.text,opacity:0.55,whiteSpace:"nowrap"}}>{p.day}</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function Notes({ notes }) {
+  return (
+    <div style={{display:"flex",flexDirection:"column",gap:10}}>
+      <SectionLabel>Notes</SectionLabel>
+      {notes.map(n=>{
+        const c=ac(n.color);
+        return (
+          <div key={n.id} style={{
+            background:c.soft,border:`1px solid ${c.border}`,
+            borderRadius:12,padding:"12px 13px",
+          }}>
+            <div style={{fontSize:13,fontWeight:700,color:c.text,marginBottom:5,lineHeight:1.2}}>{n.title}</div>
+            <div style={{fontSize:12,color:"var(--text-soft)",lineHeight:1.55}}>{n.body}</div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function SectionLabel({ children }) {
+  return (
+    <p style={{fontSize:10,fontWeight:700,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--text-subtle)"}}>
+      {children}
+    </p>
+  );
+}
+
+/* ── Mobile nav ──────────────────────────────────────── */
+function MobileNav({ tab, onChange }) {
+  const items = [
+    { id:"grid",      icon:Icons.grid,  label:"Grid" },
+    { id:"notes",     icon:Icons.note,  label:"Notes" },
+    { id:"dashboard", icon:Icons.chart, label:"Summary" },
+  ];
+  return (
+    <nav style={{
+      position:"fixed",
+      bottom:"max(10px,env(safe-area-inset-bottom))",
+      left:"max(10px,env(safe-area-inset-left))",
+      right:"max(10px,env(safe-area-inset-right))",
+      zIndex:40,
+      display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:5,
+      background:"var(--surface)",
+      border:"1px solid var(--border-medium)",
+      borderRadius:18,padding:5,
+      boxShadow:"var(--shadow-lg)",
+      backdropFilter:"blur(12px)",
+    }}>
+      {items.map(it=>(
+        <button key={it.id} onClick={()=>onChange(it.id)} style={{
+          border:"none",borderRadius:13,minHeight:46,padding:"7px 5px",
+          display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:3,
+          cursor:"pointer",fontFamily:"inherit",
+          background: tab===it.id ? "rgba(8,145,178,0.10)" : "transparent",
+          color: tab===it.id ? "var(--primary)" : "var(--text-muted)",
+          transition:"all 160ms ease",
+        }}>
+          <Icon d={it.icon} size={15}/>
+          <span style={{fontSize:10,fontWeight:700,letterSpacing:"0.03em",lineHeight:1}}>{it.label}</span>
+        </button>
+      ))}
+    </nav>
+  );
+}
+
+/* ── Place modal ─────────────────────────────────────── */
+function PlaceModal({ templates, cell, onPlace, onClose }) {
+  const [sel, setSel] = useState(templates[0]?.id||"");
+  return (
+    <div onClick={onClose} style={{
+      position:"fixed",inset:0,zIndex:50,
+      background:"rgba(15,23,42,0.12)",
+      backdropFilter:"blur(3px)",
+      display:"flex",alignItems:"center",justifyContent:"center",padding:20,
+    }}>
+      <div onClick={e=>e.stopPropagation()} style={{
+        width:"min(340px,100%)",
+        background:"var(--surface-solid)",
+        border:"1px solid var(--border-medium)",
+        borderRadius:20,
+        boxShadow:"var(--shadow-lg)",
+        padding:20,
+      }}>
+        {/* Header */}
+        <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:16}}>
+          <div>
+            <h2 style={{fontSize:16,fontWeight:700,color:"var(--text-strong)",letterSpacing:"-0.01em"}}>Place activity</h2>
+            {cell&&<p style={{fontSize:12,color:"var(--text-muted)",marginTop:3}}>{cell.day} · {cell.hour}:00</p>}
+          </div>
+          <Btn variant="ghost" size="icon" onClick={onClose}><Icon d={Icons.x} size={14}/></Btn>
+        </div>
+
+        {/* Template list */}
+        <div style={{display:"flex",flexDirection:"column",gap:5,marginBottom:16}}>
+          {templates.map(t=>{
+            const c=ac(t.color), active=sel===t.id;
+            return (
+              <button key={t.id} onClick={()=>setSel(t.id)} style={{
+                display:"flex",alignItems:"center",gap:10,padding:"9px 11px",
+                borderRadius:11,cursor:"pointer",fontFamily:"inherit",textAlign:"left",
+                border: active ? `1.5px solid ${c.solid}` : `1px solid var(--border)`,
+                background: active ? c.soft : "var(--surface-muted)",
+                transition:"all 140ms ease",
+              }}>
+                <span style={{width:10,height:10,borderRadius:"50%",background:c.solid,flexShrink:0}}/>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:13,fontWeight:700,color:active?c.text:"var(--text-strong)"}}>{t.title}</div>
+                  {t.desc&&<div style={{fontSize:11,color:"var(--text-muted)",marginTop:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.desc}</div>}
+                </div>
+                {active&&<Icon d={Icons.check} size={13} style={{color:c.solid,flexShrink:0}}/>}
+              </button>
+            );
+          })}
+        </div>
+
+        <div style={{display:"flex",gap:7}}>
+          <Btn variant="outline" size="md" onClick={onClose} sx={{flex:1}}>Cancel</Btn>
+          <Btn size="md" onClick={()=>cell&&onPlace(sel,cell.day,cell.hour)} sx={{flex:1}}>Place</Btn>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>

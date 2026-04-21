@@ -25,6 +25,7 @@ const SLOT_OPTIONS: {
     label: string;
     compactLabel: string;
 }[] = [
+    { value: 15, label: "15 min", compactLabel: "15m" },
     { value: 30, label: "30 min", compactLabel: "30m" },
     { value: 60, label: "1 hour", compactLabel: "1h" },
 ];
@@ -50,17 +51,7 @@ function formatRangeLabel(startTime: number, endTime: number) {
     return `${minutesToHour(startTime)}-${minutesToHour(endTime)}`;
 }
 
-function formatMinutes(minutes: number) {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-
-    return `${hours.toString().padStart(2, "0")}:${mins
-        .toString()
-        .padStart(2, "0")}`;
-}
-
 function AddActivityAction({ className }: { className?: string }) {
-    const schedule = useScheduleContext();
     const user = useUserContext();
     const dispatch = useDispatch();
     const buttonClassName = cn(className, "h-8 min-h-8 rounded-full");
@@ -74,23 +65,6 @@ function AddActivityAction({ className }: { className?: string }) {
             })),
         [user.templates]
     );
-
-    const timeOptions = useMemo(() => {
-        const options: { value: string; label: string }[] = [];
-
-        for (
-            let minutes = schedule.grid.startTime;
-            minutes <= schedule.grid.endTime;
-            minutes += schedule.grid.slotDuration
-        ) {
-            options.push({
-                value: String(minutes),
-                label: formatMinutes(minutes),
-            });
-        }
-
-        return options;
-    }, [schedule.grid.endTime, schedule.grid.slotDuration, schedule.grid.startTime]);
 
     const handlePlaceActivity = (data: PlacedActivityDraft) => {
         dispatch({
@@ -114,11 +88,7 @@ function AddActivityAction({ className }: { className?: string }) {
     }
 
     return (
-        <PlaceActivityModal
-            templateOptions={templateOptions}
-            timeOptions={timeOptions}
-            onSubmit={handlePlaceActivity}
-        >
+        <PlaceActivityModal templateOptions={templateOptions} onSubmit={handlePlaceActivity}>
             <Button size="sm" className={buttonClassName}>
                 <Plus className="size-3.5" />
                 Add Activity
