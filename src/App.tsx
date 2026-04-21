@@ -18,7 +18,8 @@ import { cn } from "@/lib/utils";
 type LayoutMode = "mobile" | "tablet" | "desktop";
 type MobileView = "grid" | "notes" | "dashboard";
 
-const TABLET_BREAKPOINT = 960;
+const MOBILE_BREAKPOINT = 768;
+const GRID_TOOLBAR_COMPACT_BREAKPOINT = 960;
 const DESKTOP_BREAKPOINT = 1360;
 
 const MOBILE_NAV_ITEMS: {
@@ -31,26 +32,39 @@ const MOBILE_NAV_ITEMS: {
     { id: "dashboard", label: "Summary", icon: BarChart3 },
 ];
 
+function getViewportWidth() {
+    if (typeof window === "undefined") {
+        return DESKTOP_BREAKPOINT;
+    }
+
+    return window.innerWidth;
+}
+
 function resolveLayoutMode(width: number): LayoutMode {
     if (width >= DESKTOP_BREAKPOINT) {
         return "desktop";
     }
 
-    if (width >= TABLET_BREAKPOINT) {
+    if (width >= MOBILE_BREAKPOINT) {
         return "tablet";
     }
 
     return "mobile";
 }
 
-function App() {
-    const [layoutMode, setLayoutMode] = useState<LayoutMode>(() => {
-        if (typeof window === "undefined") {
-            return "desktop";
-        }
+function resolveToolbarLayout(width: number, layoutMode: LayoutMode): LayoutMode {
+    if (width < GRID_TOOLBAR_COMPACT_BREAKPOINT) {
+        return "mobile";
+    }
 
-        return resolveLayoutMode(window.innerWidth);
-    });
+    return layoutMode;
+}
+
+function App() {
+    const [viewportWidth, setViewportWidth] = useState(() => getViewportWidth());
+    const [layoutMode, setLayoutMode] = useState<LayoutMode>(() =>
+        resolveLayoutMode(getViewportWidth())
+    );
     const [sidebarView, setSidebarView] = useState<SidebarView>("summary");
     const [tabletSidebarOpen, setTabletSidebarOpen] = useState(false);
     const [mobileView, setMobileView] = useState<MobileView>("grid");
@@ -58,26 +72,31 @@ function App() {
     const [templatesVisible, setTemplatesVisible] = useState(false);
     const [isGridExpanded, setIsGridExpanded] = useState(false);
     const [isToolbarCompact, setIsToolbarCompact] = useState(false);
+    const toolbarLayout = resolveToolbarLayout(viewportWidth, layoutMode);
     const isContinuousMobileLayout = layoutMode === "mobile" && !isGridExpanded;
 
     useEffect(() => {
         const handleResize = () => {
-            const nextMode = resolveLayoutMode(window.innerWidth);
+            const nextViewportWidth = window.innerWidth;
+            const nextLayoutMode = resolveLayoutMode(nextViewportWidth);
 
+            setViewportWidth((currentWidth) =>
+                currentWidth === nextViewportWidth ? currentWidth : nextViewportWidth
+            );
             setLayoutMode((currentMode) => {
-                if (currentMode === nextMode) {
+                if (currentMode === nextLayoutMode) {
                     return currentMode;
                 }
 
-                if (nextMode !== "tablet") {
+                if (nextLayoutMode !== "tablet") {
                     setTabletSidebarOpen(false);
                 }
 
-                if (nextMode !== "mobile") {
+                if (nextLayoutMode !== "mobile") {
                     setMobileView("grid");
                 }
 
-                return nextMode;
+                return nextLayoutMode;
             });
         };
 
@@ -142,7 +161,7 @@ function App() {
                     )}
                 >
                     <GridToolbar
-                        layout={layoutMode}
+                        layout={toolbarLayout}
                         onOpenSettings={() => setMobileSettingsOpen(true)}
                         isExpanded={isGridExpanded}
                         onToggleExpand={toggleGridExpanded}
@@ -314,8 +333,8 @@ function App() {
                                     onClick={() => setMobileView(item.id)}
                                     aria-current={isActive ? "page" : undefined}
                                 >
-                                    <Icon className="size-4" />
-                                    <span>{item.label}</span>
+                                    <Icon className="app-mobile-nav__icon" />
+                                    <span className="app-mobile-nav__label">{item.label}</span>
                                 </button>
                             );
                         })}

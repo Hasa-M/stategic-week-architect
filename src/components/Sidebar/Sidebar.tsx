@@ -22,7 +22,7 @@ export default function Sidebar({
     return (
         <div
             className={cn(
-                "app-panel flex w-full flex-col p-3 md:p-4",
+                "app-panel app-sidebar flex w-full flex-col p-3 md:p-4",
                 continuousScroll ? "overflow-visible" : "h-full min-h-0 overflow-hidden",
                 className
             )}
